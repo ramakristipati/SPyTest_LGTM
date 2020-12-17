@@ -732,6 +732,7 @@ def udld_basic_validations():
     po_fail = 0
     udld_global_fail = 0
     udld_neighbor_fail = 0
+    tx_rx_fail = 0
 
     po_up_flag = False
     itr_counter = 0
