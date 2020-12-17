@@ -207,6 +207,9 @@ def verify_dhcp_client(dut, interface_name, ip_ad="", network="", family =""):
 @pytest.fixture(scope="function", autouse=True)
 def dhcp_relay_link_select_func_hooks(request):
     # Function configuration
+    if st.get_func_name(request) == "test_ft_dhcp_relay_link_select_017":
+        create_vlan(vars.D3, relay_data.vlan_id)
+        add_vlan_member(vars.D3, relay_data.vlan_id[0], [vars.D3D2P1])
     yield
     if st.get_func_name(request) == "test_ft_dhcp_relay_link_select_001":
         config_dhcp_relay(vars.D2, src_interface=relay_data.loopback_intf, interface=vars.D2D3P1, action="remove")
@@ -308,7 +311,9 @@ def dhcp_relay_link_select_func_hooks(request):
                                     ip_address=relay_data.relay_server_ip6,
                                     subnet=relay_data.relay_server_ip6_subnet, family="ipv6", config='remove', cli_type="klish")
     elif st.get_func_name(request) == "test_ft_dhcp_relay_link_select_017":
-        dhcp_relay.dhcp_client_stop(vars.D3, vars.D3D2P1, family="ipv4", skip_error_check=True, show_interface=True)
+        dhcp_relay.dhcp_client_stop(vars.D3, relay_data.vlan_intf, family="ipv4", skip_error_check=True, show_interface=True)
+        delete_vlan_member(vars.D3, relay_data.vlan_id[0], [vars.D3D2P1])
+        delete_vlan(vars.D3, relay_data.vlan_id[0])
         ip.config_ip_addr_interface(vars.D2, interface_name=relay_data.vlan_intf,
                                     ip_address=relay_data.relay_client_ip,
                                     subnet=relay_data.relay_client_ip_subnet, family="ipv4", config='remove')
@@ -872,9 +877,9 @@ def test_ft_dhcp_relay_link_select_017():
         st.log(e)
         report_flag = 1
     st.log("Check whether client gets ipv4 address")
-    dhcp_relay.dhcp_client_start(vars.D3, vars.D3D2P1)
+    dhcp_relay.dhcp_client_start(vars.D3, relay_data.vlan_intf)
     st.wait(2)
-    if not poll_wait(verify_dhcp_client, 60, vars.D3, vars.D3D2P1, ip_ad = relay_data.relay_client_ip, network = relay_data.relay_client_ip_subnet):
+    if not poll_wait(verify_dhcp_client, 60, vars.D3, relay_data.vlan_intf, ip_ad = relay_data.relay_client_ip, network = relay_data.relay_client_ip_subnet):
         report_flag = 1
         dhcp_relay_link_select_debug(vars.D2, interface=relay_data.vlan_intf)
     st.log("Check the values are correctly set or not through REST GET call")

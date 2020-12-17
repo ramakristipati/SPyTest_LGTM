@@ -3328,6 +3328,12 @@ def test_FtOpSoRoEvpn5549Ft32220(Ft32215_fixture):
     else:
         st.log("##### leaf2 advertising moved MACs to leaf3 as expected, passed #####")
 
+    if verify_traffic(tg_dict["d4_tg_port1"], tg_dict["d6_tg_port1"]):
+        st.log("##### traffic verification passed after dynamic mac movement #####")
+    else:
+        success=False
+        st.error("########## traffic verification failed after dynamic mac movement ##########")
+
     st.log("### verify no traffic received in leaf3 ###")
     result = tg.tg_traffic_stats(port_handle=tg_dict["d5_tg_ph1"], mode="aggregate")
     if vars.tgen_list[0] == 'stc-01':
@@ -3341,13 +3347,8 @@ def test_FtOpSoRoEvpn5549Ft32220(Ft32215_fixture):
         st.log("##### NO traffic received in leaf3 as expected, passed #####")
     else:
         success=False
-        st.error("########## some traffic still coming to leaf3 which is not expected, failed ##########")
+        st.error("########## some traffic still coming to leaf3 at rate {} which is not expected, failed ##########".format(rx_rate))
         st.exec_all([[Mac.get_mac,vars.D4],[Mac.get_mac,vars.D5],[Mac.get_mac,vars.D6]])
-    if verify_traffic(tg_dict["d4_tg_port1"], tg_dict["d6_tg_port1"]):
-        st.log("##### traffic verification passed after dynamic mac movement #####")
-    else:
-        success=False
-        st.error("########## traffic verification failed after dynamic mac movement ##########")
 
     tg.tg_traffic_control(action="stop", stream_handle=[stream_dict["l2_32220_2"],stream_dict["l2_32220_3"]])
 

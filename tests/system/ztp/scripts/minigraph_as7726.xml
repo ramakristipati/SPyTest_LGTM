@@ -66,46 +66,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet1</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet2</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet3</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -118,46 +79,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet5</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet6</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet7</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -170,46 +92,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet9</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet10</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet11</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -222,46 +105,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet13</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet14</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet15</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -274,46 +118,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet17</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet18</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet19</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -326,46 +131,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet21</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet22</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet23</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -378,46 +144,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet25</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet26</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet27</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -430,59 +157,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet29</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet30</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet31</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet31</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -495,46 +170,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet33</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet34</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet35</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -547,46 +183,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet37</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet38</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet39</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -599,46 +196,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet41</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet42</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet43</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -651,46 +209,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet45</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet46</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-            <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet47</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>10000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
             <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -703,20 +222,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>10000</Speed>
-            </a:EthernetInterface>
-           <a:EthernetInterface>
-               <ElementType>DeviceInterface</ElementType>
-               <AlternateSpeeds i:nil="true" />
-               <EnableAutoNegotiation>true</EnableAutoNegotiation>
-               <EnableFlowControl>true</EnableFlowControl>
-               <Index>1</Index>
-               <InterfaceName>Ethernet48</InterfaceName>
-               <InterfaceType i:nil="true" />
-               <MultiPortsInterface>false</MultiPortsInterface>
-               <PortName>0</PortName>
-               <Priority>0</Priority>
-               <Speed>40000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
            <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -729,7 +235,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>40000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
            <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -742,7 +248,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>40000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
              <a:EthernetInterface>
                  <ElementType>DeviceInterface</ElementType>
@@ -755,7 +261,7 @@
                  <MultiPortsInterface>false</MultiPortsInterface>
                  <PortName>0</PortName>
                  <Priority>0</Priority>
-                 <Speed>40000</Speed>
+                 <Speed>100000</Speed>
               </a:EthernetInterface>
            <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -768,7 +274,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>40000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
            <a:EthernetInterface>
                <ElementType>DeviceInterface</ElementType>
@@ -781,7 +287,7 @@
                <MultiPortsInterface>false</MultiPortsInterface>
                <PortName>0</PortName>
                <Priority>0</Priority>
-               <Speed>40000</Speed>
+               <Speed>100000</Speed>
             </a:EthernetInterface>
          </EthernetInterfaces>
          <FlowControl>true</FlowControl>
@@ -848,3 +354,4 @@
    <Hostname>sonic</Hostname>
    <HwSku>Accton-AS7726-32X</HwSku>
 </DeviceMiniGraph>
+

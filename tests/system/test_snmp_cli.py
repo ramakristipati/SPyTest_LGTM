@@ -73,6 +73,7 @@ def initialize_variables():
     data.host = mutils.ensure_service_params(vars.D1, "snmptrap", "ip")
     data.traps_version = "v1"
     data.group_snmp_version = "v3"
+    data.group_snmp_version2 = "any"
     data.oid_tree = "1"
     data.v3_user1 = cutils.random_username(slen=10)
     data.v3_user2 = cutils.random_username(slen=11)
@@ -2068,3 +2069,47 @@ def test_ft_snmp_gnmi_v2_v3_inform_trap_mgmtvrf():
         st.report_pass("test_case_passed")
     else:
         st.report_fail("test_case_failed")
+
+@pytest.mark.snmp_cli
+@pytest.mark.snmp_cli_test_cases
+@pytest.mark.snmp_counters
+def test_ft_snmp_cli_counter():
+    """
+    Author : Prasad Darnasi(prasad.darnasi@broadcom.com)
+    Verify that snmp counter fields incremented over simulation .
+        """
+    st.banner("Illegal operation for community name supplied*Encoding errors*Set-request PDUs*Number of altered variables counters verify")
+
+    snmp_obj.show_snmp_counters(vars.D1)
+
+    snmp_obj.config(vars.D1, {"cli_type": data.cli_type, "community": {"name": data.ro_community, "group_name": "gr1", "no_form": False},
+                              "groups": {"name": "gr1", "version": {"type": "any"}, "no_form": False}})
+    snmp_obj.config(vars.D1, {"cli_type": data.cli_type,"groups": {"name": "gr1", "version": {"type": "any"}, "operations":
+                             {"read_view": "view_name", "write_view": "view_name",}, "no_form": False}})
+    snmp_obj.config(vars.D1, {"cli_type": data.cli_type, "view": {"name": "view_name", "oid": '1.3.6.1.2.1.1',
+                                                                  "option": "included", "no_form": False}})
+    snmp_obj.config(vars.D1, {"cli_type": data.cli_type,"view": {"name": "view_name", "oid": '1.3.6.1.2.1.2',
+                                                                 "option": "excluded", "no_form": False}})
+    snmp_obj.clear_snmp_counters(vars.D1)
+    snmp_obj.set_snmp_operation(ipaddress=ipaddress, version='2', oid="1.3.6.1.2.1.1.6.0",
+                                community_name=data.ro_community, objtype="s", objname="test", report=False)
+    snmp_obj.get_snmp_operation(ipaddress=ipaddress, oid="1.3.6.1.2.1.1.6.0",
+                                community_name=data.v1_community, report=False)
+    snmp_obj.get_snmp_operation(ipaddress=ipaddress, oid="1.3.6.1.2.1.2.1.0",
+                                community_name=data.v1_community, report=False)
+    snmp_obj.get_snmp_operation(ipaddress=ipaddress, oid="1.3.6.1.2.1.2.1.0",
+                                community_name=data.ro_community, report=False)
+    st.log("Performing SNMPv3 get operation with valid username and invalid privacy password to simulate Encoding errors.")
+    get_snmp_output = snmp_obj.get_snmp_operation(connection_obj=ssh_conn_obj, ipaddress=ipaddress,
+                                                  oid=ifAdminStatus_oid, security_lvl="authPriv",
+                                                  filter=data.filter_cli, version="3", usr_name=data.v3_user4,
+                                                  auth_type=data.auth_protocol[0],
+                                                  auth_pwd=data.auth_password,
+                                                  privacy_type=data.verify_priv_protocol[0],
+                                                  privacy_pwd="dummyprivacy", timeout=5)
+
+    output = snmp_obj.verify_snmp_counters(vars.D1, map={"set_request_pdus": 1, "illegal_operation": 1, "encoding_errors": 6, "altered_variables": 1})
+
+    if not output:
+        st.report_fail("snmp_counter_not_incremented")
+    st.report_pass("test_case_passed")

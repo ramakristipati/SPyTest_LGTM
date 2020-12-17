@@ -1288,7 +1288,7 @@ def test_L3Scl_005(L3Scl_fixture_005):
     #wait_time = 15
     #duration = 15
     tr = {}
-    num_loops = max_arp_count/host_count
+    num_loops = int(max_arp_count/host_count)
     mac_list = ['00:0a:00:00:01:01','00:0b:00:00:01:01','00:0c:00:00:01:01','00:0d:00:00:01:01','00:0e:00:00:01:01','00:0f:00:00:01:01','00:aa:00:00:01:01','00:bb:00:00:01:01','00:cc:00:00:01:01','00:dd:00:00:01:01','00:ee:00:00:01:01']
     mac_dst=str(mac_obj.get_sbin_intf_mac(dut1, data.vlan201_1))
     for i in range(0,num_loops):

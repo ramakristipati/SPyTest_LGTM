@@ -705,9 +705,9 @@ def test_ft_acl_l2_in_rate_limit_intf_vlan():
 @pytest.mark.regression
 def test_ft_acl_l2_ipv4_ipv6():
     policy_flow_test_mac(vars.D1, vars.D1T1P1, data.policy_name_1, data.stage[0], vars.D1T1P1, vars.D1T1P2)
+    bind_policy_and_verify_status(vars.D1, vars.D1T1P1, data.stage[0], data.policy_name_1, 'del')
     policy_flow_test_ipv4(vars.D1, 'Switch', data.policy_name_2, data.stage[0], vars.D1T1P1, vars.D1T1P2)
     policy_flow_test_ipv6(vars.D1, data.vlan_name, data.policy_name_3, data.stage[0], vars.D1T1P1, vars.D1T1P2)
-    bind_policy_and_verify_status(vars.D1, vars.D1T1P1, data.stage[0], data.policy_name_1, 'del')
     bind_policy_and_verify_status(vars.D1, 'Switch', data.stage[0], data.policy_name_2, 'del')
     bind_policy_and_verify_status(vars.D1, data.vlan_name, data.stage[0], data.policy_name_3, 'del')
     if data.flag == 0:

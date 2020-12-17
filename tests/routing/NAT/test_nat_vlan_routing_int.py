@@ -176,7 +176,11 @@ def test_ft_static_napt_vlan():
     if not (int(result[0]['packetscnt']) > (0.90 * (int(count)))):
         util_nat_vlan_debug_fun()
         st.report_fail("snat_translation_failed_in_packet",data.in1_ip_addr_h[1],data.out_ip_addr)
-    nat_stats = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_tcp, dst_ip=data.out_ip_addr, dst_ip_port=data.tcp_src_global_port)
+    for _ in range(5):
+        nat_stats = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_tcp, dst_ip=data.out_ip_addr, dst_ip_port=data.tcp_src_global_port)
+        if nat_stats and (int(nat_stats[0]['packets']) > (0.90 * (int(count)))):
+            break
+        st.wait(2)
     if not nat_stats:
         st.error("Received empty list, acl counters not updated")
         util_nat_vlan_debug_fun()
@@ -213,8 +217,11 @@ def test_ft_dynamic_napt_vlan_udp():
     tg3.tg_traffic_control(action='run', handle=tg3_str_obj)
     tg3.tg_traffic_control(action='stop', handle=tg3_str_obj)
     st.wait(12)
-    nat_stats_s = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp,
-                                                src_ip=data.in1_ip_addr_h[-1], src_ip_port=data.local_src_port[0])
+    for _ in range(5):
+        nat_stats_s = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp, src_ip=data.in1_ip_addr_h[-1], src_ip_port=data.local_src_port[0])
+        if nat_stats_s and (int(nat_stats_s[0]['packets']) > (0.80 * (int(count)))):
+            break
+        st.wait(2)
     if not nat_stats_s:
         st.error("Received empty list,nat statistics are not updated")
         util_nat_vlan_debug_fun()
@@ -222,7 +229,11 @@ def test_ft_dynamic_napt_vlan_udp():
     if not int(nat_stats_s[0]['packets']) >= (0.80 * (int(count))):
         util_nat_vlan_debug_fun()
         st.report_fail("dynamic_snat_translation_entry_create_fail", data.in1_ip_addr_h[-1], data.out_ip_pool[0])
-    nat_stats_d = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp, dst_ip=trn_src_ip,dst_ip_port=trn_src_port)
+    for _ in range(5):
+        nat_stats_d = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp, dst_ip=trn_src_ip,dst_ip_port=trn_src_port)
+        if nat_stats_d and (int(nat_stats_d[0]['packets']) > (0.80 * (int(count)))):
+            break
+        st.wait(2)
     if not nat_stats_d:
         st.error("Received empty list, nat statistics are not updated")
         util_nat_vlan_debug_fun()
@@ -238,8 +249,11 @@ def test_ft_dynamic_napt_vlan_udp():
     nat_obj.clear_nat(vars.D1, statistics=True)
     tg1.tg_traffic_control(action='run', handle=tg_str_data[1]["tg1_dyn_nat_udp_data_str_id_1"])
     tg1.tg_traffic_control(action='stop', handle=tg_str_data[1]["tg1_dyn_nat_udp_data_str_id_1"])
-    nat_stats_s = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp,
-                                                  src_ip=data.in1_ip_addr_h[-1], src_ip_port=data.local_src_port[0])
+    for _ in range(5):
+        nat_stats_s = nat_obj.poll_for_nat_statistics(vars.D1, protocol=data.proto_udp, src_ip=data.in1_ip_addr_h[-1], src_ip_port=data.local_src_port[0])
+        if nat_stats_s and (int(nat_stats_s[0]['packets']) > (0.80 * (int(count)))):
+            break
+        st.wait(2)
     nat_obj.config_nat_static(vars.D1, protocol=data.proto_udp, global_ip=trn_src_ip,global_port_id=trn_src_port,
                               local_ip=data.in1_ip_addr_h[-1],local_port_id=data.tcp_src_local_port,
                               config=data.config_del, nat_type=data.nat_type_dnat)
