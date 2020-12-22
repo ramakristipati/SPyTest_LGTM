@@ -3362,6 +3362,7 @@ def test_stp_mac_move(cleanup_stp_mac_move):
     flooding_fail = 0
     mac_dampen_threshold_fail = 0
     mac_dampen_fail = 0
+
     tc_list = ['FtOpSoSwL2FwdIt004', 'FtOpSoSwL2FwdIt005', 'FtOpSoSwL2FwdIt006', 'FtOpSoSwL2FwdFn013', \
                'FtOpSoSwL2FwdFn014','FtOpSoSwL2FwdNe002','FtOpSoSwMacDampeningDefaultThreshold']
     print_log("START of TC ==> test_stp_mac_move\n TCs:<{}>".format(tc_list), "HIGH")
@@ -4060,7 +4061,7 @@ def test_l2fwd_mac_move_dampening(cleanup_mac_move_dampening):
         print_log("Mac Move Dampening disabled ports PASSED", 'MED')
 
     print_log("Configure Mac Move Dampening threshold 30", 'MED')
-    utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.configure_macmove_threshold, count=30, interval=10)
+    utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.configure_macmove_threshold, count=30, interval=7)
     results = utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.verify_mac_dampening_threshold, count=30)[0]
     if False in results:
         print_log("Mac Move Dampening threshold config FAILED", 'MED')
@@ -4101,8 +4102,6 @@ def test_l2fwd_mac_move_dampening(cleanup_mac_move_dampening):
     current_time = time.time()
     time_elapsed = current_time - start_time
     st.wait(180 - time_elapsed, "MAC Move Dampening: Wait for 180 Sec for mac learning to enable")
-    ## clear MAC immeadiately to trigger next Mac Move
-    utils.exec_all(pll_exec, [[mac_obj.clear_mac, dut] for dut in data.my_dut_list])
     ### START TIMER
     start_time = time.time()
 
@@ -4147,8 +4146,6 @@ def test_l2fwd_mac_move_dampening(cleanup_mac_move_dampening):
     current_time = time.time()
     time_elapsed = current_time - start_time
     st.wait(360 - time_elapsed, "MAC Move Dampening: Wait for 360 Sec for mac learning to re-enable")
-    ## clear MAC immeadiately to trigger next Mac Move
-    utils.exec_all(pll_exec, [[mac_obj.clear_mac, dut] for dut in data.my_dut_list])
     ### START TIMER
     start_time = time.time()
 
@@ -4303,7 +4300,7 @@ def test_reload_with_mac_dampening(cleanup_reload_with_mac_dampening):
     utils.exec_all(pll_exec, [[mac_obj.clear_mac_dampening, dut] for dut in data.my_dut_list])
 
     print_log("Configure Mac Move Dampening threshold 30",'MED')
-    utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.configure_macmove_threshold, count=30, interval=10)
+    utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.configure_macmove_threshold, count=30, interval=7)
     results = utils.exec_foreach(pll_exec, data.my_dut_list, mac_obj.verify_mac_dampening_threshold, count=30)[0]
     if False in results:
         print_log("Mac Move Dampening threshold config FAILED",'MED')
@@ -4317,8 +4314,14 @@ def test_reload_with_mac_dampening(cleanup_reload_with_mac_dampening):
     ### Send MacMov traffic and verify Mac learning disabled
     mac_mov_burst_streams = [ data.stream_data['AA:11']['streamBA'], data.stream_data['BB:22']['streamBA'], \
                           data.stream_data['CC:33']['streamBA'], data.stream_data['DD:44']['streamBA'] ]
-    start_stop_traffic(src_stream_list=data.base_src_streams+mac_mov_burst_streams, direction="single")
+    #start_stop_traffic(src_stream_list=data.base_src_streams+mac_mov_burst_streams, direction="single")
+    tg_h.tg_traffic_control(action='run', handle=data.base_src_streams + mac_mov_burst_streams)
+    if data.tgen_type == "stc":
+        st.wait(5, 'Continuous stream started, Wait 5 sec for mac move packets to reach threshold')
+    elif data.tgen_type == "ixia":
+        st.wait(4, 'Continuous stream started, Wait 4 sec for mac move packets to reach threshold')
     verify_mac_dampening_disabled_ports()
+    tg_h.tg_traffic_control(action='stop', handle=data.base_src_streams + mac_mov_burst_streams)
 
     ### Remove port vlan assosciation on D1 and verify port removed from disabled list
     add_rem_port_vlan_configs('del')
@@ -4333,6 +4336,7 @@ def test_reload_with_mac_dampening(cleanup_reload_with_mac_dampening):
     deconf_flag = 0
     verify_mac_learning('enable',msg="port vlan reconfig")
 
+    ###Clear MAC before starting mac move traffic from D2 so that DA macs are unlearned and forwarded to D1
     utils.exec_all(pll_exec, [[mac_obj.clear_mac, dut] for dut in data.my_dut_list])
 
     ### Start MAC move traffic again so that ports are disabled
@@ -4352,8 +4356,6 @@ def test_reload_with_mac_dampening(cleanup_reload_with_mac_dampening):
         st.report_fail("test_case_failure_message", fail_msg)
     else:
         print_log("Mac Move Dampening threshold config PASSED", 'MED')
-    ## Clear mac to trigger new learnings, so that mac move is seen.
-    utils.exec_all(pll_exec, [[mac_obj.clear_mac, dut] for dut in data.my_dut_list])
 
     verify_mac_dampening_disabled_ports()
     start_time = time.time()

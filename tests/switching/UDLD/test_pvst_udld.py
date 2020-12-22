@@ -1226,7 +1226,7 @@ def test_pvst_udld_normal_aggressive():
         final_result = False
 
     if tc_result8 > 0:
-       st.report_tc_fail("FtOpSoSwpvstudldFastReboot002", "UUDLD_PVST_Aggressive_Fast_Reboot_Failed", "test_pvst_udld_normal_aggressive")
+       st.report_tc_fail("FtOpSoSwpvstudldFastReboot002", "UDLD_PVST_Aggressive_Fast_Reboot_Failed", "test_pvst_udld_normal_aggressive")
     else:
        st.report_tc_pass("FtOpSoSwpvstudldFastReboot002", "UDLD_PVST_Aggressive_Fast_Reboot_Passed", "test_pvst_udld_normal_aggressive")
 

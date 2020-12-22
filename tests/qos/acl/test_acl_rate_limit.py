@@ -1147,11 +1147,15 @@ def test_ft_acl_rate_limit_warm_reboot():
     st.log("Sending traffic from ingress ports")
     data.tg.tg_traffic_control(action='run', stream_handle=[data.streams['ipv4_stream2']])
 
-    st.reboot(vars.D1, "warm")
-    poll_for_interfaces(vars.D1, 90)
+    output = st.reboot(vars.D1, "warm")
+    if not output:
+        st.error("Warm reboot failed ..")
+        data.flag == 0
+    else:
+        poll_for_interfaces(vars.D1, 90)
     data.tg.tg_traffic_control(action='stop', stream_handle=[data.streams['ipv4_stream2']])
-    verify_traffic(vars.D1, vars.D1T1P1, vars.D1T1P2, data.stage[0])
-
+    if data.flag != 0:
+        verify_traffic(vars.D1, vars.D1T1P1, vars.D1T1P2, data.stage[0])
     if data.flag == 0:
         st.report_fail("Flow_operation_failed")
     else:

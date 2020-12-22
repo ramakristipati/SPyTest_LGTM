@@ -256,15 +256,30 @@ def test_FtOpSoRoEvpnRouterLvtepFt32311(Tgencleanup_fixture):
     hdrMsg(" \n####### Start bidirectional traffic ##############\n")
     ############################################################################################
     start_traffic(stream_han_list=stream_dict["l2_32311"])
+    st.wait(5,"Waiting for 5 sec before verifying traffic")
 
     ############################################################################################
     hdrMsg("\n####### Verify traffic ##############\n")
     ############################################################################################
-    if verify_traffic(tx_port=vars.T1D3P1,rx_port=vars.T1D6P1):
-        st.log("PASS: Traffic verification passed ")
+    loss_prcnt = get_traffic_loss_inpercent(tg_dict['d3_tg_ph1'],stream_dict["l2_32311"][0],dest_tg_ph=tg_dict['d6_tg_ph1'])
+    loss_prcnt1 = get_traffic_loss_inpercent(tg_dict['d6_tg_ph1'],stream_dict["l2_32311"][1],dest_tg_ph=tg_dict['d3_tg_ph1'])
+    traffic_status = True
+
+    if loss_prcnt < 0.11:
+        st.log("PASS: Traffic verification passed b/w LVTEP N1 Orphan port to SVTEP")
     else:
         success=False
-        hdrMsg("test_FtOpSoRoEvpnRouterLvtepFt32311 FAIL: Traffic verification failed ")
+        traffic_status = False
+        hdrMsg("test_FtOpSoRoEvpnRouterLvtepFt32311 FAIL: Traffic verification failed b/w LVTEP N1 Orphan port to SVTEP")
+
+    if loss_prcnt1 < 0.11:
+        st.log("PASS: Traffic verification passed b/w SVTEP to LVTEP N1 Orphan port")
+    else:
+        success=False
+        traffic_status = False
+        hdrMsg("test_FtOpSoRoEvpnRouterLvtepFt32311 FAIL: Traffic verification failed b/w SVTEP to LVTEP N1 Orphan port")
+
+    if not traffic_status:
         debug_traffic(evpn_dict["leaf_node_list"][0],evpn_dict["leaf_node_list"][3])
 
     ############################################################################################
@@ -1388,6 +1403,8 @@ def test_FtOpSoRoEvpnRouterLvtepFt32339_2(Tgencleanup_fixture):
     Vlan.delete_vlan_member(evpn_dict["leaf_node_list"][0],
            evpn_dict["l3_vni_sag"]["l3_vni_sagvlan_list"][0], evpn_dict["leaf1"]["intf_list_tg"][0],True)
 
+    time1 = 5 if evpn_dict['cli_mode'] == "click" else 16
+    st.wait(time1,"wait for {} seconds before verifying Tx stats on newly added port to vlan".format(time1))
     hdrMsg("\n####### Step 13: Verify BUM traffic Rx over VxLAN tunnel ##############\n")
     leaf1_rx = 0;leaf2_rx = 0
     for interface1 in evpn_dict["leaf1"]["intf_list_spine"]:
@@ -1419,10 +1436,8 @@ def test_FtOpSoRoEvpnRouterLvtepFt32339_2(Tgencleanup_fixture):
                 success=False
 
     for interface1 in evpn_dict["leaf2"]["intf_list_spine"]:
-        rx = get_interfaces_counters(evpn_dict["leaf_node_list"][1],
-                        interface=interface1,property="rx_bps",cli_type="click")
-        leaf2_rx = leaf2_rx + int(float(rx[0]['rx_bps']))
-        if int(float(rx[0]['rx_bps'])) > 350:
+        ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][1], interface1, "rx_bps")
+        if verify_traffic_pass(ktx,"rx_bps",evpn_dict['cli_mode']):
             st.log("INFO: Leaf 2 BUM Rx port over Vxlan tunnel is : {}".format(interface1))
             ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["mlag_pch_intf_list"][0], "tx_bps")
             tx_val = ktx[0]['tx_bps'].split(" ")
@@ -1438,8 +1453,8 @@ def test_FtOpSoRoEvpnRouterLvtepFt32339_2(Tgencleanup_fixture):
                 st.log("PASS: LVTEP N2 is sending the BUM traffic to N1 over peer link at the rate of : {}".format(ktx))
                 Vlan.add_vlan_member(evpn_dict["leaf_node_list"][0],evpn_dict["l3_vni_sag"]["l3_vni_sagvlan_list"][0],
                             evpn_dict["leaf1"]["intf_list_tg"][1],True)
-                if evpn_dict['cli_mode'] == "klish":
-                    st.wait(16,"wait for 16 seconds before verifying Tx stats on newly added port to vlan")
+                time1 = 5 if evpn_dict['cli_mode'] == "click" else 16
+                st.wait(time1,"wait for {} seconds before verifying Tx stats on newly added port to vlan".format(time1))
                 ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["intf_list_tg"][1], "tx_bps")
                 tx_val = ktx[0]['tx_bps'].split(" ")
                 if verify_vxlan_traffic(ktx,tx_val,"decap"):
@@ -1464,36 +1479,37 @@ def test_FtOpSoRoEvpnRouterLvtepFt32339_2(Tgencleanup_fixture):
            evpn_dict["l3_vni_sag"]["l3_vni_sagvlan_list"][0], evpn_dict["leaf4"]["intf_list_tg"][0],True)
 
     leaf1_rx = [];leaf1_tx = 0;
-    leaf1_rx = get_interfaces_counters(evpn_dict["leaf_node_list"][0],
-                            interface=evpn_dict["leaf1"]["intf_list_tg"][0],property="rx_bps",cli_type="click")
-
+    krx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["intf_list_tg"][0], "rx_bps")
     hdrMsg("\n####### Step 17: Verify BUM traffic Rx over MLAG orphon port ##############\n")
-    if int(float(leaf1_rx[0]['rx_bps'])) > 350:
-        st.log("PASS: LVTEP Orphon port Rx traffic, shows rx rate as : {}".format(leaf1_rx[0]['rx_bps']))
+    if verify_traffic_pass(krx,"rx_bps",evpn_dict['cli_mode']):
+        st.log("PASS: LVTEP Orphon port Rx traffic, shows rx rate as : {}".format(krx[0]['rx_bps']))
+        result = False
         for interface1 in evpn_dict["leaf1"]["intf_list_spine"]:
-            tx = get_interfaces_counters(evpn_dict["leaf_node_list"][0],
-                            interface=interface1,property="tx_bps",cli_type="click")
-            leaf1_tx = leaf1_tx + int(float(tx[0]['tx_bps']))
             ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][0], interface1, "tx_bps")
             tx_val = ktx[0]['tx_bps'].split(" ")
             if verify_vxlan_traffic(ktx,tx_val,"encap"):
                 st.log("INFO: Leaf 1 BUM forwader port is : {}".format(interface1))
+                result = True
 
-        if leaf1_tx >= int(float(leaf1_rx[0]['rx_bps'])) - 10:
+        if result:
             st.log("PASS: BUM traffic is passed as per local bias in LVTEP node 1 ")
         else:
-            st.log("test_FtOpSoRoEvpnRouterLvtepFt32339_2 FAIL: BUM traffic is not passed as per local bias in LVTEP node 1 , \
-                          Leaf1 Tx {} and Leaf1 Rx {}".format(str(leaf1_tx),str(leaf1_rx[0]['rx_bps'])))
+            st.log("test_FtOpSoRoEvpnRouterLvtepFt32339_2 FAIL: BUM traffic is not passed as per local bias in LVTEP node 1")
             success=False
 
         hdrMsg("\n####### Step 18: Verify BUM traffic Tx over MLAG peer link in LVTEP N1 ##############\n")
-        tx = get_interfaces_counters(evpn_dict["leaf_node_list"][0],
-                            interface=evpn_dict["leaf1"]["iccpd_pch_intf_list"][0],property="tx_bps",cli_type="click")
-        if int(float(tx[0]['tx_bps'])) > 350:
+        ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["iccpd_pch_intf_list"][0],"tx_bps")
+        tx_val = ktx[0]['tx_bps'].split(" ")
+        if verify_vxlan_traffic(ktx,tx_val,"decap"):
             st.log("PASS: LVTEP N1 is sending the BUM traffic to N2 over peer link at the rate of : {}".format(ktx))
+            time1 = 5 if evpn_dict['cli_mode'] == "click" else 15
+            st.wait(time1,"wait for {} seconds before verifying Tx rate on removing port from the vlan".format(time1))
             ktx = Evpn.get_port_counters(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["intf_list_tg"][0], "tx_bps")
             tx_val = ktx[0]['tx_bps'].split(" ")
-            if verify_vxlan_traffic(ktx,tx_val,"decap"):
+            rate =  880.0 if evpn_dict['cli_mode'] == "click" else 915.0
+            if " MB/s" in ktx[0]['tx_bps']:
+                st.log("PASS: Leaf 2 BUM traffic flooding to orphon port at the rate: {}".format(ktx))
+            elif " KB/s" in ktx[0]['tx_bps'] and float(tx_val[0]) > rate:
                 st.log("PASS: Leaf 2 BUM traffic flooding to orphon port at the rate: {}".format(ktx))
             else:
                 st.log("test_FtOpSoRoEvpnRouterLvtepFt32339_2 FAIL: Leaf 2 BUM traffic not flooding to orphon port, shows rate: {}".format(ktx))
@@ -1503,7 +1519,7 @@ def test_FtOpSoRoEvpnRouterLvtepFt32339_2(Tgencleanup_fixture):
             success=False
 
     else:
-        st.log("test_FtOpSoRoEvpnRouterLvtepFt32339_2 FAIL: LVTEP N1 Orphon port is not Rx traffic, shows rx rate as : {}".format(leaf1_rx[0]['rx_bps']))
+        st.log("test_FtOpSoRoEvpnRouterLvtepFt32339_2 FAIL: LVTEP N1 Orphon port is not Rx traffic, shows rx rate as : {}".format(krx[0]['rx_bps']))
 
     ############################################################################################
     hdrMsg("\n###### Step 19: Bring up SVTEP TG port forwarding traffic to LVTEP Orphon port ######\n")

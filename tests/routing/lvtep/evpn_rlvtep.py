@@ -1326,50 +1326,90 @@ def cleanup_mclag_system_mac():
     parallel.exec_parallel(True,evpn_dict["leaf_node_list"][0:2],mclag.config_mclag_system_mac,[dict1, dict2])
 
 def cleanup_mclag():
-    st.log("Remove tenant L3 VLANs to ICCPD link on LVTEP nodes used for similar L3 network across LVTEP peers")
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf1"]["iccpd_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf2"]["iccpd_pch_intf_list"][0])
+    if res1 and res2:
+        st.log("Remove tenant L3 VLANs to ICCPD link on LVTEP nodes used for similar L3 network across LVTEP peers")
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], evpn_dict["leaf1"]["iccpd_pch_intf_list"][0],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], evpn_dict["leaf2"]["iccpd_pch_intf_list"][0],True]])
 
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf1"]["iccpd_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf2"]["iccpd_pch_intf_list"][0])
+    if res1 and res2:
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], evpn_dict["leaf1"]["iccpd_pch_intf_list"][0],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], evpn_dict["leaf2"]["iccpd_pch_intf_list"][0],True]])
 
-    st.log("Remove binding of L3 VNI VLAN to ICCPD link on LVTEP nodes used for orphon traffic scenarios")
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["l3_vni_list"][0], \
+                   tagged=evpn_dict["leaf1"]["iccpd_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["l3_vni_list"][0], \
+                   tagged=evpn_dict["leaf2"]["iccpd_pch_intf_list"][0])
+    if res1 and res2:
+        st.log("Remove binding of L3 VNI VLAN to ICCPD link on LVTEP nodes used for orphon traffic scenarios")
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf1"]["l3_vni_list"][0], evpn_dict["leaf1"]["iccpd_pch_intf_list"][0],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf2"]["l3_vni_list"][0], evpn_dict["leaf2"]["iccpd_pch_intf_list"][0],True]])
 
-    st.log("Remove binding of tenant L3 VLANs to MLAG client port on LVTEP nodes to handle scale test BGP session to TGEN port")
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf1"]["mlag_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf2"]["mlag_pch_intf_list"][0])
+    if res1 and res2:
+        st.log("Remove binding of tenant L3 VLANs to MLAG client port on LVTEP nodes to handle scale test BGP session to TGEN port")
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], evpn_dict["leaf1"]["mlag_pch_intf_list"],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], evpn_dict["leaf2"]["mlag_pch_intf_list"],True]])
 
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf1"]["mlag_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   tagged=evpn_dict["leaf2"]["mlag_pch_intf_list"][0])
+    if res1 and res2:
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], evpn_dict["leaf1"]["mlag_pch_intf_list"],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], evpn_dict["leaf2"]["mlag_pch_intf_list"],True]])
 
-    st.log("Remove binding of L3 VNI VLAN to MLAG client port to handle scale test BGP session to TGEN port")
-    utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
+    res1 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][0],evpn_dict["leaf1"]["l3_vni_list"][0], \
+                   tagged=evpn_dict["leaf1"]["mlag_pch_intf_list"][0])
+    res2 = Vlan.verify_vlan_config(evpn_dict["leaf_node_list"][1],evpn_dict["leaf2"]["l3_vni_list"][0], \
+                   tagged=evpn_dict["leaf2"]["mlag_pch_intf_list"][0])
+    if res1 and res2:
+        st.log("Remove binding of L3 VNI VLAN to MLAG client port to handle scale test BGP session to TGEN port")
+        utils.exec_all(True, [[Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][0],
                            evpn_dict["leaf1"]["l3_vni_list"][0], evpn_dict["leaf1"]["mlag_pch_intf_list"],True],
                           [Vlan.delete_vlan_member, evpn_dict["leaf_node_list"][1],
                            evpn_dict["leaf2"]["l3_vni_list"][0], evpn_dict["leaf2"]["mlag_pch_intf_list"],True]])
 
-    st.log("Remove IPv4 address of L3VNI interface on LVTEP node used for similar L3 network across LVTEP peers")
-    utils.exec_all(True, [[ip.delete_ip_interface, evpn_dict["leaf_node_list"][0],
+    res1=ip.verify_interface_ip_address(evpn_dict["leaf_node_list"][0],"Vlan"+evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   evpn_dict["leaf2"]["l3_tenant_ip_list"][0]+"/24",family="ipv4",vrfname=evpn_dict["leaf1"]["vrf_name_list"][0])
+    res2=ip.verify_interface_ip_address(evpn_dict["leaf_node_list"][1],"Vlan"+evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   evpn_dict["leaf1"]["l3_tenant_ip_list"][0]+"/24",family="ipv4",vrfname=evpn_dict["leaf2"]["vrf_name_list"][0])
+    if res1 and res2:
+        st.log("Remove IPv4 address of L3VNI interface on LVTEP node used for similar L3 network across LVTEP peers")
+        utils.exec_all(True, [[ip.delete_ip_interface, evpn_dict["leaf_node_list"][0],
             "Vlan"+evpn_dict["leaf2"]["tenant_l3_vlan_list"][0],
             evpn_dict["leaf2"]["l3_tenant_ip_list"][0], evpn_dict["leaf1"]["l3_vni_ipmask_list"][0]],
             [ip.delete_ip_interface, evpn_dict["leaf_node_list"][1],
             "Vlan"+evpn_dict["leaf1"]["tenant_l3_vlan_list"][0],
             evpn_dict["leaf1"]["l3_tenant_ip_list"][0], evpn_dict["leaf2"]["l3_vni_ipmask_list"][0]]])
 
-    st.log("Remove IPv6 address of L3VNI interface on LVTEP node used for similar L3 network across LVTEP peers")
-    utils.exec_all(True, [[ip.delete_ip_interface, evpn_dict["leaf_node_list"][0],
+    res1=ip.verify_interface_ip_address(evpn_dict["leaf_node_list"][0],"Vlan"+evpn_dict["leaf2"]["tenant_l3_vlan_list"][0], \
+                   evpn_dict["leaf2"]["l3_tenant_ipv6_list"][0]+"/96",family="ipv6",vrfname=evpn_dict["leaf1"]["vrf_name_list"][0])
+    res2=ip.verify_interface_ip_address(evpn_dict["leaf_node_list"][1],"Vlan"+evpn_dict["leaf1"]["tenant_l3_vlan_list"][0], \
+                   evpn_dict["leaf1"]["l3_tenant_ipv6_list"][0]+"/96",family="ipv6",vrfname=evpn_dict["leaf2"]["vrf_name_list"][0])
+    if res1 and res2:
+        st.log("Remove IPv6 address of L3VNI interface on LVTEP node used for similar L3 network across LVTEP peers")
+        utils.exec_all(True, [[ip.delete_ip_interface, evpn_dict["leaf_node_list"][0],
             "Vlan"+evpn_dict["leaf2"]["tenant_l3_vlan_list"][0],
             evpn_dict["leaf2"]["l3_tenant_ipv6_list"][0], evpn_dict["leaf1"]["l3_vni_ipv6mask_list"][0],"ipv6"],
             [ip.delete_ip_interface, evpn_dict["leaf_node_list"][1],

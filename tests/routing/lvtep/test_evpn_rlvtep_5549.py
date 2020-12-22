@@ -259,11 +259,30 @@ def test_FtOpSoRoEvpn5549LvtepFt32311(Tgencleanup_fixture):
     ############################################################################################
     hdrMsg("\n####### Verify traffic ##############\n")
     ############################################################################################
-    if verify_traffic(tx_port=vars.T1D3P1,rx_port=vars.T1D6P1):
-        st.log("PASS: Traffic verification passed ")
+    st.wait(5,"Waiting for 5 sec before verifying traffic")
+
+    ############################################################################################
+    hdrMsg("\n####### Verify traffic ##############\n")
+    ############################################################################################
+    loss_prcnt = get_traffic_loss_inpercent(tg_dict['d3_tg_ph1'],stream_dict["l2_32311"][0],dest_tg_ph=tg_dict['d6_tg_ph1'])
+    loss_prcnt1 = get_traffic_loss_inpercent(tg_dict['d6_tg_ph1'],stream_dict["l2_32311"][1],dest_tg_ph=tg_dict['d3_tg_ph1'])
+    traffic_status = True
+
+    if loss_prcnt < 0.11:
+        st.log("PASS: Traffic verification passed b/w LVTEP N1 Orphan port to SVTEP")
     else:
         success=False
-        hdrMsg("test_FtOpSoRoEvpn5549LvtepFt32311 FAIL: Traffic verification failed ")
+        traffic_status = False
+        hdrMsg("test_FtOpSoRoEvpn5549LvtepFt32311 FAIL: Traffic verification failed b/w LVTEP N1 Orphan port to SVTEP")
+
+    if loss_prcnt1 < 0.11:
+        st.log("PASS: Traffic verification passed b/w SVTEP to LVTEP N1 Orphan port")
+    else:
+        success=False
+        traffic_status = False
+        hdrMsg("test_FtOpSoRoEvpn5549LvtepFt32311 FAIL: Traffic verification failed b/w SVTEP to LVTEP N1 Orphan port")
+
+    if not traffic_status:
         debug_traffic(evpn_dict["leaf_node_list"][0],evpn_dict["leaf_node_list"][3])
 
     ############################################################################################
@@ -4234,11 +4253,20 @@ def test_FtOpSoRoEvpn5549LvtepFt3271_2(Ft3271_2_fixture):
     else:
         success = False
         st.error("########## FAIL: expected 40700 MACs not found in D4 after clearing EVPN ##########")
-    if verify_traffic():
+
+    for i in range(4):
+        result = verify_traffic()
+        if result is False:
+            hdrMsg(" \n####### retry traffic verification after clearing EVPN ##############\n")
+            continue
+        else:
+            break
+    if result:
         st.log("########## traffic verification passed after clearing EVPN neighbor ##########")
     else:
         success = False
         st.error("########## FAIL: traffic verification failed after clearing EVPN neighbor ##########")
+
     if (not success) and techsupport_not_gen:
         techsupport_not_gen = False
         basic.get_techsupport(filename='test_FtOpSoRoEvpn5549LvtepFt3272')
@@ -4266,11 +4294,19 @@ def test_FtOpSoRoEvpn5549LvtepFt3271_2(Ft3271_2_fixture):
         techsupport_not_gen = False
         basic.get_techsupport(filename='test_FtOpSoRoEvpn5549LvtepFt3272')
 
-    if verify_traffic():
+    for i in range(4):
+        result = verify_traffic()
+        if result is False:
+            hdrMsg(" \n####### retry traffic verification after clearing BGP neighbor ##############\n")
+            continue
+        else:
+            break
+    if result:
         st.log("########## traffic verification passed after clearing BGP neighbor ##########")
     else:
         success = False
         st.error("########## FAIL: traffic verification failed after clearing BGP neighbor ##########")
+
     if (not success) and techsupport_not_gen:
         techsupport_not_gen = False
         basic.get_techsupport(filename='test_FtOpSoRoEvpn5549LvtepFt3272')
@@ -4280,11 +4316,19 @@ def test_FtOpSoRoEvpn5549LvtepFt3271_2(Ft3271_2_fixture):
     Evpn.clear_bgp_evpn(vars.D4, "*", soft_dir="in")
     st.wait(10)
 
-    if verify_traffic():
+    for i in range(4):
+        result = verify_traffic()
+        if result is False:
+            hdrMsg(" \n####### retry traffic verification after clearing BGP table ##############\n")
+            continue
+        else:
+            break
+    if result:
         st.log("########## traffic verification passed after clearing BGP table ##########")
     else:
         success = False
         st.error("########## FAIL: traffic verification failed after clearing BGP table ##########")
+
     if (not success) and techsupport_not_gen:
         techsupport_not_gen = False
         basic.get_techsupport(filename='test_FtOpSoRoEvpn5549LvtepFt3272')

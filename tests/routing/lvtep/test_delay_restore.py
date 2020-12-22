@@ -12,6 +12,7 @@ from evpn_rlvtep import *
 from evpn_rlvtep_underlay_base_cfg import *
 import apis.switching.portchannel as pch
 import apis.system.interface as Intf
+import apis.system.port as port
 scale = SpyTestDict()
 
 @pytest.fixture(scope="module", autouse=True)
@@ -533,6 +534,9 @@ def test_underlay(request):
     else:
         evpn_dict["l3_traffic_loss_ccep"] = evpn_dict["l3_traffic_loss_ccep3"]
 
+    hdrMsg("With linktrack config SwSS restart will take 1.5 sec more bootup time compared to time taken without linktrack, so added 150,000 Pkts")
+    evpn_dict["l3_traffic_loss_ccep"] = evpn_dict["l3_traffic_loss_ccep"] + 150000
+
     if carrier == "standby_node":
         hdrMsg("Traffic has passed through Stanby node for L3 traffic stream ipv4_3237 & ipv4_3238 across SwSS restart")
         evpn_dict["l3_traffic_loss_ccep"] = evpn_dict["l3_traffic_loss_ccep"] + 450000
@@ -750,7 +754,8 @@ def test_underlay(request):
     ############################################################################################
     hdrMsg("\n# step 35: Getting L2 traffic loss for LVTEP Node 2 orphon port without linktrack & delay restore #\n")
     ############################################################################################
-    if check_traffic_duration(t1,250,vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]) or not check_traffic_duration(t1,250,vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]):
+    if check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]) \
+            or not check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]):
         tg.tg_traffic_control(action="stop", stream_handle=stream_dict["l2_372_1"])
 
     evpn_dict["l2_traffic_loss_orphon_reboot"] = get_traffic_stream_loss_inpkts(tg_dict['d4_tg_ph1'],stream_dict["l2_372_1"][0])
@@ -1864,7 +1869,8 @@ def test_DeReOrphonPo(Linktrack_fixture):
     if not res:
         hdrMsg("FAIL: Downlink tracked port {} not come up after waiting".format(evpn_dict["leaf2"]["intf_list_tg"][0]))
 
-    if check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]) or not check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]):
+    if check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]) \
+            or not check_traffic_duration(t1,evpn_dict["traffic_duration"],vars.D4,evpn_dict["leaf2"]["intf_list_tg"][0]):
         tg.tg_traffic_control(action="stop", stream_handle=stream_dict["l2_372_1"])
 
     if not delay_restore_check(evpn_dict["leaf_node_list"][1],"PortChannel100",domain="2"):
@@ -2156,6 +2162,6 @@ def check_traffic_duration(t1,interval,dut,intf1):
                 pch.get_portchannel_list(dut)
             else:
                 Intf.interface_status_show(dut,interfaces=intf1)
-                Evpn.get_port_counters(dut,intf1, "rx_bps")
+                port.get_interface_counters_all(dut,port=intf1)
     return False
 

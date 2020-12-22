@@ -50,11 +50,13 @@ def rbac_variables_init():
     rbac.local_rw = {'username': 'testlorw',
                      'password': 'testlo123rw',
                      'role': 'admin',
-                     'mode': 'rw'}
+                     'mode': 'rw',
+                     'cli_type': 'klish'}
     rbac.local_ro = {'username': 'testloro',
                      'password': 'testlo123ro',
                      'role': 'operator',
-                     'mode': 'ro'}
+                     'mode': 'ro',
+                     'cli_type': 'klish'}
     rbac.local_no_group = {'username': 'test_no_group',
                            'password': 'no_group',
                            'mode': 'ro',
