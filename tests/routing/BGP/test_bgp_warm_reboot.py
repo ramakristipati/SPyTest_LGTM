@@ -98,14 +98,6 @@ def verify_bgp_route_count(dut, family='ipv4', shell="sonic", **kwargs):
             if kwargs['state'] == 'Established':
                 if entries['state'].isdigit():
                     return entries['state']
-                else:
-                    return 0
-            else:
-                return 0
-        else:
-            return 0
-    else:
-        return 0
     return 0
 
 

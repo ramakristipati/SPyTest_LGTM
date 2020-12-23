@@ -2,15 +2,29 @@ import pytest
 from random import randint
 from spytest import st, tgapi, SpyTestDict
 
-from apis.routing.ip import config_unconfig_interface_ip_addresses, clear_ip_configuration, verify_interface_ip_address, get_interface_ip_address
-from spytest.utils import random_vlan_list
-from  apis.switching.vlan import create_vlan, add_vlan_member, clear_vlan_configuration, verify_vlan_config, show_vlan_config, delete_vlan, delete_vlan_member
+from apis.routing.ip import config_unconfig_interface_ip_addresses
+from apis.routing.ip import clear_ip_configuration
+from apis.routing.ip import verify_interface_ip_address
+from apis.routing.ip import get_interface_ip_address
+from apis.switching.vlan import create_vlan, delete_vlan
+from apis.switching.vlan import add_vlan_member, delete_vlan_member
+from apis.switching.vlan import verify_vlan_config, show_vlan_config
+from apis.switching.vlan import clear_vlan_configuration
+from apis.switching.vlan import show_vlan_config
 import apis.routing.ip_helper as ip_helper_obj
-from apis.switching.portchannel import *
+from apis.switching.portchannel import add_portchannel_member
+from apis.switching.portchannel import clear_portchannel_configuration
+from apis.switching.portchannel import create_portchannel
+from apis.switching.portchannel import delete_portchannel
+from apis.switching.portchannel import delete_portchannel_member
+from apis.switching.portchannel import get_portchannel
+from apis.switching.portchannel import poll_for_portchannel_status
 from apis.system.interface import clear_interface_counters, show_interface_counters_detailed
 from apis.routing.vrf import config_vrf, bind_vrf_interface, verify_vrf_verbose, get_vrf_verbose
 from apis.system.reboot import config_save, verify_warm_restart
 from apis.system.basic import service_operations_by_systemctl, verify_service_status, poll_for_system_status
+
+from utilities.common import random_vlan_list
 
 data                    = SpyTestDict()
 

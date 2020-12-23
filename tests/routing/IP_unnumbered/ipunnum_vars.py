@@ -16,7 +16,6 @@ dut3_loopback = ['Loopback%s'%x for x in range(31,40)]
 
 ip_loopback_prefix = '32'
 ipv6_loopback_prefix = '128'
-ipv6_loopback_prefix = '128'
 
 dut1_loopback_ip = ['1.0.%s.2'%x for x in range(1,10)]
 dut2_loopback_ip = ['2.0.%s.2'%x for x in range(1,10)]
@@ -40,7 +39,7 @@ dut1_dut2_vlan = '2'
 dut2_dut3_vlan = '3'
 
 dut1_tg_vlan = ['11, 12, 13']
-dut2_tg_vlan = ['21, 22, 23'] 
+dut2_tg_vlan = ['21, 22, 23']
 dut3_tg_vlan = ['31, 32, 33']
 
 dut1_tg_ip = ['%s.0.1.1'%x for x in range (11,15)]

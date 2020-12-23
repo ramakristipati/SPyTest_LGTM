@@ -1,18 +1,16 @@
 import pytest
 import datetime
 
+from spytest import st, tgapi, SpyTestDict
+
 import apis.routing.ip as ipfeature
-from spytest.tgen.tg import tgen_obj_dict
-from spytest.tgen.tgen_utils import tg_bgp_config
-from spytest.dicts import SpyTestDict
-from spytest import st
 import apis.switching.vlan as vapi
-from spytest.dicts import SpyTestDict
-from spytest.utils import filter_and_select
 import apis.routing.bgp as bgpfeature
 import apis.routing.arp as arpapi
 from apis.system.interface import interface_status_show, interface_operation
 from apis.common.asic import bcm_show
+
+from utilities.common import filter_and_select
 
 data = SpyTestDict()
 data.my_dut_list = None
@@ -70,9 +68,9 @@ data.max_vlan_count = 160
 def get_handles():
     vars = st.get_testbed_vars()
 
-    st.log(vars)
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
+
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P1)
     tg_ph_2 = tg2.get_port_handle(vars.T1D1P2)
 
@@ -87,10 +85,6 @@ def pre_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
 
-    dut1 = data.my_dut_list[0]
-
-    st.log(vars)
-
     ipfeature.clear_ip_configuration(st.get_dut_names())
     ipfeature.clear_ip_configuration(st.get_dut_names(),'ipv6')
     vapi.clear_vlan_configuration(st.get_dut_names())
@@ -102,31 +96,25 @@ def pre_test_l3_fwding():
 def post_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
-    dut1 = data.my_dut_list[0]
 
     ipfeature.delete_ip_interface(vars.D1, vars.D1T1P1, data.d1t1_ip_addr, data.mask)
-
     ipfeature.delete_ip_interface(vars.D1, vars.D1T1P2, data.d1t2_ip_addr, data.mask)
 
 def pre_test_l3_fwding_v6():
     # override from testbed
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
-    st.log(vars)
-    dut1 = data.my_dut_list[0]
 
     ipfeature.clear_ip_configuration(st.get_dut_names())
     ipfeature.clear_ip_configuration(st.get_dut_names(),'ipv6')
     vapi.clear_vlan_configuration(st.get_dut_names())
 
     ipfeature.config_ip_addr_interface(vars.D1, vars.D1T1P1, data.d1t1_ipv6_addr, data.v6_mask, family="ipv6")
-
     ipfeature.config_ip_addr_interface(vars.D1, vars.D1T1P2, data.d1t2_ipv6_addr, data.v6_mask, family="ipv6")
 
 def post_test_l3_fwding_v6():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
-    dut1 = data.my_dut_list[0]
 
     ipfeature.delete_ip_interface(vars.D1, vars.D1T1P1, data.d1t1_ipv6_addr, data.v6_mask, family="ipv6")
 
@@ -273,7 +261,7 @@ def measure_nd_learn_time(dut1, default_nd, max_nd):
     end_time = datetime.datetime.now()
     st.log("Time when all the NDP's were installed %s" %(str(end_time)))
     #st.log end_time
-    diff = (end_time - start_time).total_seconds()
+    #diff = (end_time - start_time).total_seconds()
 
 def measure_route_learn_time(dut1, default_route, max_route, cmd):
     sleep_time = 10
@@ -320,7 +308,7 @@ def test_l3_perf_tc_12_1():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     port1 = vars.D1T1P1
 
@@ -369,7 +357,7 @@ def test_l3_perf_tc_12_2():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -395,7 +383,7 @@ def test_l3_perf_tc_12_3():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -421,7 +409,7 @@ def test_l3_perf_tc_12_4():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -446,7 +434,7 @@ def test_l3_perf_tc_12_5():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -471,7 +459,7 @@ def test_l3_perf_tc_14_1():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.show_ip_route(dut1)
@@ -577,9 +565,8 @@ def verify_arp_entry( dut, port,ipaddr):
 def get_handles_1():
     vars = st.get_testbed_vars()
 
-    st.log(vars)
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
     tg_ph_1 = tg1.get_port_handle(vars.T1D2P3)
     tg_ph_2 = tg2.get_port_handle(vars.T1D2P4)
 
@@ -588,7 +575,6 @@ def get_handles_1():
 
 def verify_traffic_results(dut):
     vars = st.get_testbed_vars()
-    count = 0
     tc_fail_flag = 0
     member3 = vars.D2T1P3
     member4 = vars.D2T1P4
@@ -601,7 +587,7 @@ def verify_traffic_results(dut):
     (tg1, tg_ph_1, tg2, tg_ph_2) = get_handles_1()
 
     clear_arp_entries(dut)
-    output = arpapi.show_arp(dut)
+    arpapi.show_arp(dut)
 
     st.wait(15)
     st.log("INTFCONF: "+str(member3))
@@ -615,7 +601,7 @@ def verify_traffic_results(dut):
     #pdb.set_trace()
     edit_vid = 219
     st.wait(15)
-    output = arpapi.show_arp(dut)
+    arpapi.show_arp(dut)
     #END
     if res1:
         st.log("Interface Scaling Test Case 6.2 PASSED PING TEST")
@@ -637,9 +623,9 @@ def verify_traffic_results(dut):
     st.wait(15)
     trigger_link_flap(dut1, member3)
 
-    res=tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
+    tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
     st.wait(30)
-    output = arpapi.show_arp(dut)
+    arpapi.show_arp(dut)
     #h1=tg1.tg_interface_config(port_handle=tg_ph_1, mode='config', intf_ip_addr='10.0.62.10',  gateway='10.0.62.1', src_mac_addr='00:0a:01:00:00:01', vlan='1', vlan_id='61', vlan_id_count=data.intf_count, arp_send_req='1', gateway_step='0.0.1.0', intf_ip_addr_step='0.0.1.0', vlan_id_step='1')
 
 
@@ -660,12 +646,12 @@ def verify_traffic_results(dut):
     # L3 INTF SCALING TEST CASE 1.4 START
     trigger_link_flap(dut1, member3)
     st.wait(30)
-    res=tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
+    tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
     #h1=tg1.tg_interface_config(port_handle=tg_ph_1, mode='config', intf_ip_addr='10.0.62.10',  gateway='10.0.62.1', src_mac_addr='00:0a:01:00:00:01', vlan='1', vlan_id='61', vlan_id_count=data.intf_count, arp_send_req='1', gateway_step='0.0.1.0', intf_ip_addr_step='0.0.1.0', vlan_id_step='1')
 
 
     st.wait(30)
-    output = arpapi.show_arp(dut)
+    arpapi.show_arp(dut)
     ipfeature.ping(dut1, data.tc6_xt1d1_ip_addr)
     result1 = verify_arp_entry(dut, edit_vid, data.tc6_xt1d1_ip_addr)
     if result1:
@@ -680,15 +666,15 @@ def verify_traffic_results(dut):
     #tg1.tg_interface_config(port_handle=tg_ph_1, handle=h1['handle'], mode='destroy')
     # L3 INTF SCALING TEST CASE 1.4 END
     # L3 INTF SCALING TEST CASE 1.5 START
-    intf_ip_addr3 = verify_ip_from_vlan_interface(dut1, edit_vid)
+    verify_ip_from_vlan_interface(dut1, edit_vid)
     ipfeature.delete_ip_interface(dut, 'Vlan'+str(edit_vid), data.tc6_xd1t1_ip_addr, subnet="24")
     ipfeature.config_ip_addr_interface(dut, 'Vlan'+str(edit_vid), data.tc6_xd1t1_ip_addr, data.ip_prefixlen, family="ipv4")
-    res=tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
+    tg1.tg_arp_control(handle=h1['handle'], arp_target='all')
     #h1=tg1.tg_interface_config(port_handle=tg_ph_1, mode='config', intf_ip_addr='10.0.62.10',  gateway='10.0.62.1', src_mac_addr='00:0a:01:00:00:01', vlan='1', vlan_id='61', vlan_id_count=data.intf_count, arp_send_req='1', gateway_step='0.0.1.0', intf_ip_addr_step='0.0.1.0', vlan_id_step='1')
 
 
     st.wait(30)
-    output = arpapi.show_arp(dut)
+    arpapi.show_arp(dut)
 
     ipfeature.ping(dut1, data.tc6_xt1d1_ip_addr)
     result1 = verify_arp_entry(dut, edit_vid, data.tc6_xt1d1_ip_addr)
@@ -786,7 +772,7 @@ def delete_bgp_router(dut, router_id, as_num):
     st.log("delete bgp router info")
     my_cmd = "router bgp {}".format(as_num)
     st.vtysh_config(dut, my_cmd)
-    my_cmd = "no bgp router-id {}".format(router_id)
+    #my_cmd = "no bgp router-id {}".format(router_id)
 
 def create_bgp_neighbor_route_map_config(dut, local_asn, neighbor_ip, routemap):
     command = "route-map {} permit 10".format(routemap)
@@ -799,8 +785,9 @@ def create_bgp_neighbor_route_map_config(dut, local_asn, neighbor_ip, routemap):
     st.vtysh_config(dut, command)
     command = "neighbor {} route-map {} in".format(neighbor_ip, routemap)
     st.vtysh_config(dut, command)
-    command = "neighbor {} route-map {} out".format(neighbor_ip, routemap)
+    #command = "neighbor {} route-map {} out".format(neighbor_ip, routemap)
     return
+
 def measure_v4_route_scale_time(route_count, show_flag):
     vars = st.get_testbed_vars()
     dut = vars.D1
@@ -851,7 +838,7 @@ def measure_v4_route_scale_time(route_count, show_flag):
     ctrl_stop = { 'mode' : 'stop'}
 
     # Configuring the BGP router.
-    bgp_rtr1 = tg_bgp_config(tg = tg1,
+    bgp_rtr1 = tgapi.tg_bgp_config(tg = tg1,
         handle    = h1['handle'],
         conf_var  = conf_var,
         route_var = route_var,
@@ -885,7 +872,7 @@ def measure_v4_route_scale_time(route_count, show_flag):
 
     res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
     st.log("TR_CTRL: "+str(res))
-    bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+    tgapi.tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
     ipfeature.delete_ip_interface(dut, member4, data.intf_ip_addr, data.ip_prefixlen, family="ipv4")
     ipfeature.delete_ip_interface(dut, member3, data.my_ip_addr, data.ip_prefixlen, family="ipv4")
     bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)
@@ -926,10 +913,6 @@ def measure_v6_route_learning_time(route_count):
     vars = st.get_testbed_vars()
     dut = vars.D1
 
-    #TG pumps 512k per sec so to make measure route install
-    #time more accurate we start from 600k + route_count
-    base_route_count = 60000 + route_count
-
     ipfeature.clear_ip_configuration(st.get_dut_names())
     ipfeature.clear_ip_configuration(st.get_dut_names(),'ipv6')
 
@@ -956,14 +939,12 @@ def measure_v6_route_learning_time(route_count):
         ipv6_prefix_length='64', ipv6_gateway='2200::1', arp_send_req='1')
     st.log("INTFCONF: "+str(h2))
 
-    ctrl_start = { 'mode' : 'start'}
-    ctrl_stop = { 'mode' : 'stop'}
     bgp_conf=tg1.tg_emulation_bgp_config(handle=h1['handle'], mode='enable', ip_version='6',
         active_connect_enable='1', local_as='200', remote_as='100', remote_ipv6_addr='2000::1')
 
     bgp_route=tg1.tg_emulation_bgp_route_config(handle=bgp_conf['handle'], mode='add', ip_version='6',
         num_routes=route_count, prefix='3300:1::', as_path='as_seq:1')
-    bgp_ctrl=tg1.tg_emulation_bgp_control(handle=bgp_conf['handle'], mode='start')
+    tg1.tg_emulation_bgp_control(handle=bgp_conf['handle'], mode='start')
 
     # Configuring the BGP router.
     st.log("BGP neighborship established.")
@@ -972,10 +953,9 @@ def measure_v6_route_learning_time(route_count):
           emulation_dst_handle=bgp_route['handle'], circuit_endpoint_type='ipv6', mode='create',
           transmit_mode='continuous', length_mode='fixed', rate_pps=512000, enable_stream_only_gen='0')
 
-    res=tg2.tg_traffic_control(action='run', handle=tr2['stream_id'])
+    tg2.tg_traffic_control(action='run', handle=tr2['stream_id'])
 
     output = bcm_show(dut, 'bcmcmd "l3 ip6route show" | wc -l')
-    st.log(output)
     default_route = parse_route_output(output)
 
     #Assume default route as current number of routes in the system

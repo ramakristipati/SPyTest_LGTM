@@ -28,7 +28,7 @@ def ip_module_hooks(request):
     tg = tg_handler["tg"]
     yield
     ipfeature.clear_ip_configuration(vars.D1)
-    
+
 
 @pytest.fixture(scope="function", autouse=True)
 def ip_func_hooks(request):
@@ -50,19 +50,16 @@ def test_ft_l3_fwding():
     rest_urls = st.get_datastore(vars.D1, "rest_urls")
     url = rest_urls['ip_config'].format(vars.D1T1P1, sub_intf, data.ip4_addr_t1)
     url2 = rest_urls['ip_config'].format(vars.D1T1P2, sub_intf, data.ip4_addr_t2)
-    rest_put_out = config_rest(vars.D1, http_method= "rest-patch",  rest_url = url,  json_data=operation_tg1)
 
-    rest_get_out = get_rest(vars.D1, rest_url = url)
-    
-    rest_put_out1 = config_rest(vars.D1, http_method = "rest-patch",  rest_url = url2, json_data=operation_tg2)
+    config_rest(vars.D1, http_method= "rest-patch",  rest_url = url,  json_data=operation_tg1)
+    get_rest(vars.D1, rest_url = url)
+    config_rest(vars.D1, http_method = "rest-patch",  rest_url = url2, json_data=operation_tg2)
+    get_rest(vars.D1, rest_url = url2)
 
-    rest_get_out1 = get_rest(vars.D1, rest_url = url2)
-    
-    
     h1 = tg.tg_interface_config(port_handle=tg_handler["tg_ph_1"], mode='config', intf_ip_addr=data.ip4_addr_t1_tg,
                                 gateway=data.ip4_addr_t1, src_mac_addr=data.tg_mac1, arp_send_req='1')
-    h2 = tg.tg_interface_config(port_handle=tg_handler["tg_ph_2"], mode='config', intf_ip_addr=data.ip4_addr_t2_tg,
-                                gateway=data.ip4_addr_t2, src_mac_addr=data.tg_mac2, arp_send_req='1')
+    tg.tg_interface_config(port_handle=tg_handler["tg_ph_2"], mode='config', intf_ip_addr=data.ip4_addr_t2_tg,
+                           gateway=data.ip4_addr_t2, src_mac_addr=data.tg_mac2, arp_send_req='1')
     res = tgapi.verify_ping(src_obj=tg, port_handle=tg_handler["tg_ph_1"], dev_handle=h1['handle'],
                             dst_ip=data.ip4_addr_t2_tg, ping_count='1', exp_count='1')
     if res:
@@ -88,4 +85,4 @@ def test_ft_l3_fwding():
         ifapi.show_interface_counters_all(vars.D1)
         st.report_fail("test_case_failed")
     st.report_pass("test_case_passed")
-    
+

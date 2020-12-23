@@ -618,14 +618,10 @@ def test_vrrp_func_005(prologue_epilogue):
     ###########################################################
     hdrMsg("Step T11 : Try adding the track priority greater than the configured priority or invalid interface , suitable error should be seen")
     ############################################################
-
-    result = vrrp.configure_vrrp(data.dut2, vrid=vrid_list[0], interface=dut1_vlan_intf[0],track_interface_list=[lag_intf_list[3]], track_priority_list=[200], config="yes",skip_error=True)
-    expected_err = "Error"
-    #if expected_err not in str(result):
-    #    err = "Testcase {} Track interface with configured priority exceeded 254".format(tc_list[1])
-    #    failMsg(err);debug_vrrp(); err_list.append(err); tc_result = False;
-
-    result = vrrp.configure_vrrp(data.dut2, vrid=vrid_list[0], interface=dut1_vlan_intf[0], track_interface_list=['Vlan4096'], track_priority_list=[50], config="yes", skip_error=True)
+    vrrp.configure_vrrp(data.dut2, vrid=vrid_list[0], interface=dut1_vlan_intf[0],
+            track_interface_list=[lag_intf_list[3]], track_priority_list=[200], config="yes",skip_error=True)
+    result = vrrp.configure_vrrp(data.dut2, vrid=vrid_list[0], interface=dut1_vlan_intf[0],
+             track_interface_list=['Vlan4096'], track_priority_list=[50], config="yes", skip_error=True)
     expected_err = "Error"
     if expected_err not in str(result):
         err = "Testcase {} Track interface with configured priority exceeded 254".format(tc_list[1])
@@ -981,15 +977,15 @@ def test_vrrp_func_002(vrrp_cleanup_fixture):
     if expected_err not in str(result):
         err = "Testcase {} Same VIP {} accepted for two different VRRP sessions ".format(tc_list[1],vip_list[0])
         failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-    
+
     st.log("Start Traffic for VRRP instance {}".format(vrid_list[0]))
     run_traffic(stream_handle=data.stream_handles['vrrp_{}'.format(vrid_list[0])])
-    
+
     ###########################################################
     hdrMsg("Step T2 : Configure secondary ip {} to VRRP  {} on dut1".format(vrrp_sec_ip_list[0],vrrp_vlan_intf[0]))
     ############################################################
     ip_api.config_ip_addr_interface(data.dut1,vrrp_vlan_intf[0],vrrp_sec_ip_list[0],30,is_secondary_ip='yes')
-    
+
     ###########################################################
     hdrMsg("Step T3 : Configure secondary ip {} as Virtual ip for vrrp "
         "session {} on vlan {}".format(vrrp_sec_ip_list[0],vrid_list[0],vrrp_vlan_intf[0]))
@@ -997,30 +993,30 @@ def test_vrrp_func_002(vrrp_cleanup_fixture):
     st.log("Remove old vritual-ip {} first before configuring secondar ip as virtual-ip".format(vip_list[0]))
     dict1 = {'vrid': vrid_list[0], 'vip': vip_list[0], 'interface': vrrp_vlan_intf[0], 'config': 'no' }
     parallel.exec_parallel(True, [data.dut1, data.dut2], vrrp.configure_vrrp, [dict1, dict1])
-    
+
     st.log("Configure secondary ip address {} as virtual-ip on both DUTs".format(vrrp_sec_ip_list[0]))
     vrrp.configure_vrrp(data.dut1,vrid=vrid_list[0],interface=vrrp_vlan_intf[0],priority='100')
     dict1 = {'vrid': vrid_list[0], 'vip': vrrp_sec_ip_list[0], 'interface': vrrp_vlan_intf[0]}
     parallel.exec_parallel(True, [data.dut1, data.dut2], vrrp.configure_vrrp, [dict1, dict1])
-    
+
     ###########################################################
     hdrMsg("Step T4 : Verify secondary ip elected as VIP and vrrp roles on dut1 and dut2")
     ############################################################
-        
+
     result = verify_master_backup(vrid=vrid_list[0],interface=vrrp_vlan_intf[0],vmac=vmac_list_1[0],vip=vrrp_sec_ip_list[0],master_dut=data.dut1,backup_dut=data.dut2)
     if result is False:
         err = "Testcase {} VRRP elections incorrect with secondary ip {} configured as Virtualip ".format(tc_list[0],vrrp_sec_ip_list[0])
         failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-    
+
     result = verify_tg_traffic_rate(data.tg1,data.tg2,data.tgd3_ports,data.tgd4_ports)
     if result is False:
         err = "Testcase {} Traffic check failed with secondary ip {} configured as Virtualip ".format(tc_list[0],vrrp_sec_ip_list[0])
         failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-        
+
     ###########################################################
     hdrMsg("Step T5 : Verify primary ip {} used as  source ip for vrrp advertisements sent out from dut1 master".format(vrrp_ip_list[0][0]))
     ############################################################
-    
+
     data.tg1.tg_packet_control(port_handle=data.tg_handles[0], action='start')
     st.wait(3)
     data.tg1.tg_packet_control(port_handle=data.tg_handles[0], action='stop')
@@ -1031,26 +1027,26 @@ def test_vrrp_func_002(vrrp_cleanup_fixture):
     if not capture_result:
         err = "Testcase {} VRRP advertisement not using primary IP {} as source".format(tc_list[0],vrrp_ip_list[0][0])
         failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-        
+
     ###########################################################
     hdrMsg("Step T7 : Delete secondary ip as VRRP VIP ")
     ############################################################
     st.log("\n#### Remove Virtual-IP config first ###\n")
     dict1 = {'vrid': vrid_list[0], 'vip': vrrp_sec_ip_list[0], 'interface': vrrp_vlan_intf[0], 'config': 'no' }
     parallel.exec_parallel(True, [data.dut1, data.dut2], vrrp.configure_vrrp, [dict1, dict1])
-         
+
     st.log("\n##### Delete secondary IP {} from {}  #####\n".format(vrrp_sec_ip_list[0],vrrp_vlan_intf[0]))
     ip_api.delete_ip_interface(data.dut1,vrrp_vlan_intf[0],vrrp_sec_ip_list[0],30,is_secondary_ip='yes')
-        
+
     st.log("\n#### Configure Virtual IP {} for {} ###\n".format(vip_list[0],vrrp_vlan_intf[0]))
     dict1 = {'vrid': vrid_list[0], 'vip': vip_list[0], 'interface': vrrp_vlan_intf[0] }
     parallel.exec_parallel(True, [data.dut1, data.dut2], vrrp.configure_vrrp, [dict1, dict1])
-    
+
     result = verify_master_backup(vrid=vrid_list[0], interface=vrrp_vlan_intf[0], vmac=vmac_list_1[0],vip=vip_list[0], master_dut=data.dut1, backup_dut=data.dut2)
     if result is False:
         err = "Testcase {} VRRP elections incorrect after deleting secondary ip {} which is also configured as Virtualip ".format(tc_list[0], vrrp_sec_ip_list[0])
         failMsg(err);debug_vrrp();tc_result = False;err_list.append(err)
-             
+
     ###########################################################
     hdrMsg("Step T8 : Verify Traffic after delete/add primary IP for VRID {} ".format(vrid_list[0]))
     ############################################################
@@ -1058,26 +1054,26 @@ def test_vrrp_func_002(vrrp_cleanup_fixture):
     if result is False:
         err = "Testcase {} Traffic check failed with after delete/add primary ip {} ".format(tc_list[0],vrrp_ip_list[0][0])
         failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-    
+
     vrrp.configure_vrrp(data.dut1, vrid=vrid_list[0], interface=vrrp_vlan_intf[0], priority=vrrp_priority_list_dut1[0])
     st.log("Stop Traffic for VRRP instance {}".format(vrid_list[0]))
     run_traffic(stream_handle=data.stream_handles['vrrp_{}'.format(vrid_list[0])],action='stop')
-     
+
     ###########################################################
     hdrMsg("Step T9 : Verify out of range values gets rejected for advertisement interval ")
     ############################################################
-    
+
     for interval in [0,256]:
         result =vrrp.configure_vrrp(data.dut1,vrid=vrid_list[0],interface=vrrp_vlan_intf[0],adv_interval=interval,skip_error=True)
         expected_err ="Error"
         if expected_err not in str(result):
             err = "Testcase {}  {} sec should not be accepted for advertisement interval".format(tc_list[2],interval)
             failMsg(err);debug_vrrp();tc_result=False;err_list.append(err)
-     
+
     ###########################################################
     hdrMsg("Step T10 : Verify out of range values gets rejected for vrrp priority ")
     ############################################################
-    
+
     for prio in [0,255]:
         result =vrrp.configure_vrrp(data.dut1,vrid=vrid_list[0],interface=vrrp_vlan_intf[0],priority=prio,skip_error=True)
         expected_err ="Error"
@@ -1089,5 +1085,5 @@ def test_vrrp_func_002(vrrp_cleanup_fixture):
         st.report_fail('test_case_failure_message',err_list[0])
     else:
         st.report_pass('test_case_passed')
-        
-    
+
+

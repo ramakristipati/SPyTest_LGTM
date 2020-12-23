@@ -1,12 +1,11 @@
 #   OSPF functional test cases
 #   Author:Sesha Reddy Koilkonda (seshareddy.koilkonda@broadcom.com)
-
+import re
+import time
 import pytest
-from spytest.utils import random_vlan_list,exec_all
-from spytest.tgen.tgen_utils import validate_tgen_traffic, validate_packet_capture
-from spytest.tgen.tg import *
-from utilities import parallel
-import utilities.utils as utilsapi
+
+from spytest import st, tgapi, SpyTestDict
+
 import apis.routing.ospf as ospfapi
 import apis.routing.ip as ipapi
 import apis.routing.bgp as bgpapi
@@ -17,9 +16,12 @@ import apis.system.interface as intfapi
 import apis.system.basic as basicapi
 import apis.routing.vrf as vrfapi
 import apis.system.snmp as snmp_obj
-from apis.system.connection import *
+from apis.system.connection import connect_to_device, execute_command
 import apis.common.asic_bcm as asicapi
 
+from utilities import parallel
+import utilities.utils as utilsapi
+from utilities.common import random_vlan_list, exec_all, make_list
 
 def ospf_initialize_variables():
     """
@@ -78,8 +80,8 @@ def get_handles():
     """
     :return:
     """
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P1)
     tg_ph_2 = tg1.get_port_handle(vars.T1D1P2)
     tg_ph_3 = tg1.get_port_handle(vars.T1D1P3)
@@ -528,7 +530,7 @@ def send_and_verify_traffic():
     }
 
     # verify statistics
-    aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+    aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
     return aggrResult
 
 
@@ -630,7 +632,7 @@ def ospf_module_config_clear():
 
 def ospf_reboot_device(dut_in, action=''):
 
-    dut_list = utils.make_list(dut_in)
+    dut_list = make_list(dut_in)
     thread = True if len(dut_list) > 1 else False
 
     save_sonic = []
@@ -889,8 +891,8 @@ def ospf_func_hooks(request):
         dict2 = {'ospf_links': [vars.D2D1P1, data.vlan_in_1, data.port_channel],'match': {'hellotmr': '10', 'deadtmr': '40'}}
         dict3 = {'ospf_links': [vars.D1D2P1, data.vlan_in_1, data.port_channel],'match': {'hellotmr': '10', 'deadtmr': '40'}}
         dict4 = {'ospf_links': [vars.D2D1P5, data.vlan_in_2], 'match': {'hellotmr': '10', 'deadtmr': '40'}, 'vrf': data.vrf_name[0]}
-        (res1, execp) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info,[dict1, dict2])
-        (res2, execp) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info,[dict3, dict4])
+        (res1, _) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info,[dict1, dict2])
+        (res2, _) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info,[dict3, dict4])
         if not all(res1) and not all(res2):
             st.error("OSPF Hello and Dead timers are not updated as expected after clear ip ospf")
     if 'test_ospf_vrf_movement' in request.node.name:
@@ -1296,7 +1298,7 @@ def test_ospf_neighbourship_linkflap_verify():
     st.banner('Verifying transmit delay value in captured packets')
     pkts_captured = tg1.tg_packet_stats(port_handle=tg_ph_1, format='var', output_type='hex')
 
-    capture_result = validate_packet_capture(tg_type=tg1.tg_type, pkt_dict=pkts_captured, offset_list=[62], value_list=['001e'])
+    capture_result = tgapi.validate_packet_capture(tg_type=tg1.tg_type, pkt_dict=pkts_captured, offset_list=[62], value_list=['001e'])
 
     if not capture_result:
         st.error("DUT is not send LS update packet with configured Transmit delay value is not updated with non default value on interface {}.".format(vars.D1T1P1))
@@ -1801,7 +1803,7 @@ def test_ft_ospf_distance():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     st.banner('verify traffic mode aggregate')
-    aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+    aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
 
     tg1.tg_emulation_ospf_route_config(mode='delete', handle=IA['handle'])
     ospfapi.config_ospf_router_distance(vars.D1, '', distance = 50, config='no')
@@ -1866,7 +1868,7 @@ def test_ft_ospf_distance():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     # verify traffic mode aggregate
-    aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+    aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
 
     tg1.tg_emulation_ospf_route_config(mode='delete', handle=IA['handle'])
     if aggrResult:
@@ -2280,7 +2282,7 @@ def test_ospf_hello_dead_interval_verify():
     dict1 = {'ospf_links': [vars.D1D2P5, data.vlan_in_2], 'match': {'hellotmr': '5', 'deadtmr': '40'}, 'vrf': data.vrf_name[0]}
     dict2 = {'ospf_links': [vars.D2D1P1, data.vlan_in_1, data.port_channel], 'match': {'hellotmr': '5', 'deadtmr': '40'}}
 
-    (res, execp) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info, [dict1, dict2])
+    (res, _) = parallel.exec_parallel(True, [vars.D1, vars.D2], ospfapi.verify_ospf_interface_info, [dict1, dict2])
 
     if not all(res):
         st.error("OSPF Hello and Dead timers are not updated as expected: {}-{}, {}-{}".format(vars.D1, res[0], vars.D2, res[1]))
@@ -2574,7 +2576,7 @@ def test_ft_snmp_ospf_bgp_trap():
     st.banner('Trap unconfig and server cleanup')
     snmp_obj.config_snmp_trap(vars.D1, version=2, ip_addr=None, no_form=True)
     read_cmd = "echo "" > {}".format(capture_file)
-    output = execute_command(ssh_conn_obj, read_cmd)
+    execute_command(ssh_conn_obj, read_cmd)
     st.vtysh_config(vars.D1, "no agentx")
 
 @pytest.mark.snmp_ospf_bgp
@@ -2700,7 +2702,7 @@ def test_ospf_intra_inter_area_route_calculations():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     # verify traffic mode aggregate
-    aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+    aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
 
     if not aggrResult:
         st.error("IPv4 traffic is not forwarded based on the routes advertised by the OSPF protocol")
@@ -3137,7 +3139,7 @@ def test_ospf_max_intra_ext_routes_verify():
             tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
             # verify traffic mode aggregate
-            aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+            aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
             exec_all(True, [[intfapi.show_interface_counters_all, vars.D1], [intfapi.show_interface_counters_all, vars.D2]])
 
             tg1.tg_emulation_ospf_control(mode='age_out_routes', age_out_percent=100, handle=data.max_routes_config['ipv4_prefix_interface_handle'])
@@ -3313,7 +3315,7 @@ def test_ospf_inter_area_summarization():
         }
 
         # verify traffic mode aggregate
-        aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+        aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
 
         st.log("Configuring area range with summarized network 111.1.0.0/16")
         ospfapi.config_ospf_router_area_range_cost(vars.D1, '0.0.0.1', '111.1.0.0/16', vrf=val['vrf'], config='yes')
@@ -3347,7 +3349,7 @@ def test_ospf_inter_area_summarization():
         tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
         # verify traffic mode aggregate
-        aggrResult1 = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+        aggrResult1 = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
 
         ospfapi.config_ospf_router_area_range_cost(vars.D1, '0.0.0.1', '111.1.0.0/18', vrf=val['vrf'], cost='50', config='no')
 
@@ -3643,7 +3645,7 @@ def test_ospf_traffic_verify():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     st.banner('verify traffic mode aggregate')
-    aggrResult = validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
+    aggrResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='aggregate', comp_type='packet_count')
     if not aggrResult or not result:
         basicapi.get_techsupport(filename="FtOtSoRtOspfFn010")
     tg_clear_stats()
@@ -3658,7 +3660,7 @@ def test_ospf_traffic_verify():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     st.banner('verify traffic mode streamblock')
-    streamResult = validate_tgen_traffic(traffic_details=traffic_details, mode='streamblock', comp_type='packet_count', tolerance_factor=0)
+    streamResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='streamblock', comp_type='packet_count', tolerance_factor=0)
 
     if streamResult:
         st.report_tc_pass('FtOtSoRtOspfFn050', 'ospf_session_test_pass', 'IPv4 traffic verification is successful over the docker restart')
@@ -3778,7 +3780,7 @@ def test_ospf_import_export_list():
     tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
 
     st.banner('verify traffic mode streamblock')
-    streamResult = validate_tgen_traffic(traffic_details=traffic_details, mode='streamblock', comp_type='packet_count')
+    streamResult = tgapi.validate_tgen_traffic(traffic_details=traffic_details, mode='streamblock', comp_type='packet_count')
 
     tg1.tg_emulation_ospf_route_config(mode='delete', handle=IA['handle'])
     tg2.tg_emulation_ospf_route_config(mode='delete', handle=IA1['handle'])

@@ -1,11 +1,11 @@
 import pytest
+
+from spytest import st, tgapi, SpyTestDict
+
 import apis.routing.ip as ipfeature
 import apis.routing.arp as arpfeature
 from spytest.tgen.tg import tgen_obj_dict
-from spytest.dicts import SpyTestDict
-from spytest import st
 import apis.switching.vlan as vapi
-from spytest.dicts import SpyTestDict
 import apis.system.port as papi
 import apis.system.interface as ifapi
 from apis.common.asic import bcm_show
@@ -32,8 +32,8 @@ data.ip_list_2 = ['11.0.0.10', '11.0.0.1']
 
 def get_handles():
     vars = st.get_testbed_vars()
-
-    st.log(vars)
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
     tg1 = tgen_obj_dict[vars['tgen_list'][0]]
     tg2 = tgen_obj_dict[vars['tgen_list'][0]]
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P1)
@@ -50,10 +50,6 @@ def pre_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
 
-    dut1 = data.my_dut_list[0]
-
-    st.log(vars)
-
     ipfeature.clear_ip_configuration(st.get_dut_names())
     ipfeature.clear_ip_configuration(st.get_dut_names(),'ipv6')
     vapi.clear_vlan_configuration(st.get_dut_names())
@@ -65,8 +61,6 @@ def pre_test_l3_fwding():
 def post_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
-    dut1 = data.my_dut_list[0]
-
     ipfeature.delete_ip_interface(vars.D1, vars.D1T1P1, data.d1t1_ip_addr, data.mask)
 
 def parse_output(output):
@@ -133,7 +127,7 @@ def test_l3_host_scaling_tc5_1():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -165,7 +159,7 @@ def test_l3_host_scaling_tc5_2():
     pre_test_l3_fwding()
 
     vars = st.get_testbed_vars()
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1)
 
@@ -177,7 +171,7 @@ def test_l3_host_scaling_tc5_2():
     duration = 8
 
     #Send burst of 8k upto 32k max
-    tr1 = create_l3_host(tg1, tg_ph_1, host_count, duration)
+    create_l3_host(tg1, tg_ph_1, host_count, duration)
     while (cnt <= 3 and pass_flag):
         st.wait(wait_time)
 
@@ -185,8 +179,7 @@ def test_l3_host_scaling_tc5_2():
         total = arpfeature.get_arp_count(dut1)
         st.log("Total ARP entries: {}".format(total))
 
-        output = output = bcm_show(dut1, 'bcmcmd "l3 l3table show" | wc -l')
-        st.log(output)
+        bcm_show(dut1, 'bcmcmd "l3 l3table show" | wc -l')
         if (total >= curr_count):
             curr_count += 8000
         else:
@@ -195,8 +188,7 @@ def test_l3_host_scaling_tc5_2():
 
     #Make sure all the entries programmed in the hw
     st.wait(90)
-    output = output = bcm_show(dut1, 'bcmcmd "l3 l3table show" | wc -l')
-    st.log(output)
+    bcm_show(dut1, 'bcmcmd "l3 l3table show" | wc -l')
 
     post_test_l3_fwding()
     if (pass_flag):
@@ -286,7 +278,7 @@ def test_l3_host_scaling_tc5_3():
     tg2.tg_packet_control(port_handle=tg_ph_2, action='stop')
 
     papi.clear_interface_counters(dut1)
-    res=tg2.tg_traffic_control(action='run', handle=tr1['stream_id'])
+    tg2.tg_traffic_control(action='run', handle=tr1['stream_id'])
     st.wait(20)
     retval = check_intf_traffic_counters(dut1)
 
@@ -397,7 +389,7 @@ def test_l3_host_scaling_tc5_5():
 
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles()
+    (tg1, _, tg_ph_1, _) = get_handles()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -412,7 +404,7 @@ def test_l3_host_scaling_tc5_5():
     # Verified ARP and counters at the DUT.
     total = arpfeature.get_arp_count(dut1)
     st.log("Total ARP entries: {}".format(total))
-    
+
     if (total):
       arpfeature.clear_arp_table(vars.D1)
 

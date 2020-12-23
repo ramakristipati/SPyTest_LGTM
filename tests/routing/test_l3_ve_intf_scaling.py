@@ -1,17 +1,18 @@
 
 import os
 import pytest
+from collections import OrderedDict
+
+from spytest import st, tgapi, SpyTestDict
+
 import apis.switching.vlan as vapi
-from spytest.dicts import SpyTestDict
 import apis.routing.ip as ipfeature
 from apis.routing.arp import get_arp_count, show_arp, clear_arp_table
-from spytest import st
-from collections import OrderedDict
-from spytest.tgen.tg import tgen_obj_dict
-from spytest.utils import filter_and_select
 import apis.system.port as papi
 import apis.system.reboot as reboot_obj
 from apis.system.basic import get_hwsku
+
+from utilities.common import filter_and_select
 
 def clear_arp_entries(dut):
     """
@@ -98,9 +99,9 @@ def verify_ping(src_obj,port_handle,dev_handle,dst_ip,ping_count=5,exp_count=5):
 def get_handles():
     vars = st.get_testbed_vars()
 
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P3)
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
     tg_ph_2 = tg1.get_port_handle(vars.T1D1P4)
     return (tg1, tg_ph_1, tg2, tg_ph_2)
 
@@ -152,11 +153,6 @@ def vlan_module_hooks(request):
 def l3_intf_scaling_tc_6_1_to_6_5():
     (dut) = (data.dut)
     vars = st.get_testbed_vars()
-    count = 0
-    intf_ip_addr = data.start_ip_addr
-    D2_intf_ip_addr = data.D2start_ip_addr
-    intf_ip_addr2 = data.start_ip_addr2
-    nexthop = data.nexthop_start_ip_addr
     tc_fail_flag = 0
     member3 = vars.D1T1P3
     member4 = vars.D1T1P4
@@ -171,7 +167,6 @@ def l3_intf_scaling_tc_6_1_to_6_5():
     st.wait(30)
     data.my_dut_list = st.get_dut_names()
     #dut1 = data.my_dut_list[0]
-    dut1 = dut
     #res1 = verify_ve_count(dut)
     if (res1):
       data.result[0] = True
@@ -254,7 +249,7 @@ def l3_intf_scaling_tc_6_1_to_6_5():
     tg1.tg_interface_config(port_handle=tg_ph_1, handle=h1['handle'], mode='destroy')
     # L3 INTF SCALING TEST CASE 1.4 END
     # L3 INTF SCALING TEST CASE 1.5 START
-    intf_ip_addr3 = verify_ip_from_vlan_interface(dut1, edit_vid)
+    verify_ip_from_vlan_interface(dut1, edit_vid)
     ipfeature.delete_ip_interface(dut, 'Vlan'+str(edit_vid), data.d1t1_ip_addr, subnet="24")
     ipfeature.config_ip_addr_interface(dut, 'Vlan'+str(edit_vid), data.d1t1_ip_addr, data.ip_prefixlen, family="ipv4")
     h1=tg1.tg_interface_config(port_handle=tg_ph_1, mode='config', intf_ip_addr='10.3.49.10',  gateway='10.3.49.1', src_mac_addr='00:0a:01:00:00:01', vlan='1', vlan_id='305', vlan_id_count=data.intf_count, arp_send_req='1', gateway_step='0.0.1.0', intf_ip_addr_step='0.0.1.0', vlan_id_step='1')
@@ -365,10 +360,6 @@ def pre_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
 
-    dut1 = data.my_dut_list[0]
-
-    st.log(vars)
-
     ipfeature.clear_ip_configuration(st.get_dut_names())
     ipfeature.clear_ip_configuration(st.get_dut_names(),'ipv6')
     vapi.clear_vlan_configuration(st.get_dut_names())
@@ -380,7 +371,6 @@ def pre_test_l3_fwding():
 def post_test_l3_fwding():
     vars = st.get_testbed_vars()
     data.my_dut_list = st.get_dut_names()
-    dut1 = data.my_dut_list[0]
 
     ipfeature.delete_ip_interface(vars.D1, vars.D1T1P1, data.d1t1_5_x_ip_addr, data.mask)
 
@@ -453,7 +443,7 @@ def create_l3_host(tg, tg_ph, host_count, duration):
 def test_l3_host_scaling_tc5_6():
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles_1()
+    (tg1, _, tg_ph_1, _) = get_handles_1()
     dut1 = vars.D1
 
     ret = reboot_node(dut1)
@@ -494,7 +484,7 @@ def is_supported_platform(dut):
 def test_l3_host_scaling_tc5_7():
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles_1()
+    (tg1, _, tg_ph_1, _) = get_handles_1()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")
@@ -502,8 +492,9 @@ def test_l3_host_scaling_tc5_7():
     papi.get_status(dut1)
 
     reboot_obj.config_save(dut1)
+
     #To clean-up inconsistent state left in previous test
-    ret = reboot_node(dut1)
+    reboot_node(dut1)
 
     ret = warm_reboot_node(dut1)
 
@@ -530,7 +521,7 @@ def test_l3_host_scaling_tc5_7():
 def test_l3_host_scaling_tc5_8():
     vars = st.get_testbed_vars()
     # Config 2 IPV4 interfaces on DUT.
-    (tg1, tg2, tg_ph_1, tg_ph_2) = get_handles_1()
+    (tg1, _, tg_ph_1, _) = get_handles_1()
     dut1 = vars.D1
     ipfeature.get_interface_ip_address(dut1, family="ipv4")
     ipfeature.get_interface_ip_address(dut1, family="ipv6")

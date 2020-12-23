@@ -1150,7 +1150,7 @@ def test_ft_acl_rate_limit_warm_reboot():
     output = st.reboot(vars.D1, "warm")
     if not output:
         st.error("Warm reboot failed ..")
-        data.flag == 0
+        data.flag = 0
     else:
         poll_for_interfaces(vars.D1, 90)
     data.tg.tg_traffic_control(action='stop', stream_handle=[data.streams['ipv4_stream2']])

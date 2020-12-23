@@ -1,15 +1,16 @@
 import pytest
 
 from spytest import st, tgapi, SpyTestDict
-from spytest.utils import random_vlan_list
 
 import apis.switching.portchannel as portchannel_obj
 import apis.switching.vlan as vlan_obj
 import apis.switching.mac as mac_obj
-import utilities.utils as utils_obj
 import apis.system.interface as intf_obj
 import apis.common.asic as asicapi
 import apis.routing.ip as ip_obj
+
+import utilities.utils as utils_obj
+from utilities.common import random_vlan_list
 
 vars = dict()
 
@@ -54,17 +55,24 @@ data.post_wait_time_create = 2
 #### For Vsonic we need to set skip_tg flag to 1
 skip_tg = 1
 
+## Sub test selection
+sub_test_1 = 1
+sub_test_2 = 1
+sub_test_3 = 1
+sub_test_4 = 1
+sub_test_5 = 1
+sub_test_6 = 0	## this is covered in Sub test 5: test_base_line_port_move_from_vlan_a_to_vlan_b -  test_base_line_L2_portchannel_tests
+sub_test_7 = 0  ## this is covered in - sub test 1 of main test -  test_base_line_L2_portchannel_tests
+sub_test_8 = 1
+sub_test_9 = 0  ## this is covered in sub test 10 of main test - test_base_line_mac_move_single_vlan
+sub_test_10 = 1
+sub_test_11 = 1
+sub_test_12 = 0  ## mac aging test is taken out of dev sanity, included in regressions - bassed inputs from Ramakanth J
+
 
 @pytest.mark.base_test_sanity_vsonic
 @pytest.mark.base_test_sanity_vsonic1
 def test_base_line_L2_portchannel_tests():
-
-    ## Sub test selection
-    sub_test_1 = 1
-    sub_test_2 = 1
-    sub_test_3 = 1
-    sub_test_4 = 1
-    sub_test_5 = 1
 
     ## Global and Topology variable
     data.mac_addr_cnt = 2
@@ -522,15 +530,6 @@ def test_base_line_l2_forwarding_tests():
     # data.post_wait_time_stop = 10
     # data.post_wait_time_clear = 1
     # data.post_wait_time_create = 2
-
-    ## Sub test selection
-    sub_test_6 = 0	## this is covered in Sub test 5: test_base_line_port_move_from_vlan_a_to_vlan_b -  test_base_line_L2_portchannel_tests
-    sub_test_7 = 0  ## this is covered in - sub test 1 of main test -  test_base_line_L2_portchannel_tests
-    sub_test_8 = 1
-    sub_test_9 = 0  ## this is covered in sub test 10 of main test - test_base_line_mac_move_single_vlan
-    sub_test_10 = 1
-    sub_test_11 = 1
-    sub_test_12 = 0  ## mac aging test is taken out of dev sanity, included in regressions - bassed inputs from Ramakanth J
 
     # ## Cleanup
     # vlan_obj.clear_vlan_configuration(vars.D1)

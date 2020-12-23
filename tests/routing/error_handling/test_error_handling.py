@@ -16,7 +16,6 @@ import apis.system.logging as logapi
 
 from utilities import common as utils
 from utilities.utils import list_filter_and_select
-import utilities.utils as cutils
 
 @pytest.fixture(scope="module", autouse=True)
 def error_handling_module_hooks(request):
@@ -155,7 +154,7 @@ def get_tg_parameters():
 
 
 def tg_dut_ip_bgp_config(config='add'):
-    cutils.banner_log("{}Config IP Addresses and BGP on TG connected interfaces".
+    st.banner("{}Config IP Addresses and BGP on TG connected interfaces".
                       format('Un' if config != 'add' else ''))
     # IPv4
     ipapi.config_ip_addr_interface(dut=vars.D1, interface_name=vars.D1T1P1,
@@ -178,9 +177,9 @@ def tg_dut_ip_bgp_config(config='add'):
 
 
 def tg_tg_ip_bgp_config(tg_obj, tg_ph_li, config='yes'):
-    cutils.banner_log("{}Config IP Addresses and BGP on TG interfaces".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config IP Addresses and BGP on TG interfaces".format('Un' if config != 'yes' else ''))
     if config == 'yes':
-        cutils.banner_log("IPv4 Addresses and BGP on TG interfaces", delimiter='*')
+        st.banner("IPv4 Addresses and BGP on TG interfaces", delimiter='*')
         tg_data['ipv4_h1'] = tg_obj.tg_interface_config(port_handle=tg_ph_li[0], mode='config',
                                                         intf_ip_addr=eh_data.tg1_ipv4_nbr,
                                                         gateway=eh_data.tg1_ipv4_addr,
@@ -193,7 +192,7 @@ def tg_tg_ip_bgp_config(tg_obj, tg_ph_li, config='yes'):
                                                               remote_ip_addr=eh_data.tg1_ipv4_addr)
         st.log('bgp4_rtr1 : {}'.format(tg_data['bgp4_rtr1']))
 
-        cutils.banner_log("IPv6 Addresses and BGP on TG interfaces", delimiter='*')
+        st.banner("IPv6 Addresses and BGP on TG interfaces", delimiter='*')
         tg_data['ipv6_h1'] = tg_obj.tg_interface_config(port_handle=tg_ph_li[0], mode='config',
                                                         ipv6_intf_addr=eh_data.tg1_ipv6_nbr,
                                                         ipv6_prefix_length=eh_data.tg1_ipv6_mask_len,
@@ -213,7 +212,7 @@ def tg_tg_ip_bgp_config(tg_obj, tg_ph_li, config='yes'):
 
 
 def tg_tg_bgp_routes_add():
-    cutils.banner_log("Adding and Advertising BGP Routes from TG")
+    st.banner("Adding and Advertising BGP Routes from TG")
     tg.tg_emulation_bgp_route_config(handle=tg_data['bgp4_rtr1']['handle'], mode='add',
                                      num_routes=eh_data.ipv4_max_routes, prefix='121.1.1.0', as_path='as_seq:1')
     tg.tg_emulation_bgp_route_config(handle=tg_data['bgp6_rtr1']['handle'], mode='add',
@@ -230,7 +229,7 @@ def start_stop_bgp_routes_from_tg(action='start', af='ipv4'):
 
 
 def config_ip_topology(config='yes'):
-    cutils.banner_log("{}Config IP Addresses on interfaces".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config IP Addresses on interfaces".format('Un' if config != 'yes' else ''))
     config = 'add' if config == 'yes' else 'remove'
     thread_info = list()
     thread_info.append(utils.ExecAllFunc(ipapi.config_ip_addr_interface, vars.D1, vars.D1D2P1, eh_data.ipv4_addr,
@@ -254,7 +253,7 @@ def config_ip_topology(config='yes'):
 
 
 def config_ip_loopback(config='yes'):
-    cutils.banner_log("{}Config Loopback Addresses on interfaces on D2".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config Loopback Addresses on interfaces on D2".format('Un' if config != 'yes' else ''))
     config = 'add' if config == 'yes' else 'remove'
     if config == 'add':
         ipapi.configure_loopback(vars.D2, loopback_name='Loopback1', config='yes')
@@ -267,7 +266,7 @@ def config_ip_loopback(config='yes'):
 
 
 def config_bgp_route_map(config='yes'):
-    cutils.banner_log("{}Config BGP Route Map".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config BGP Route Map".format('Un' if config != 'yes' else ''))
     thread_info = list()
     thread_info.append(utils.ExecAllFunc(ipapi.config_route_map_global_nexthop, vars.D1,
                                          route_map=eh_data.route_map_name,
@@ -279,7 +278,7 @@ def config_bgp_route_map(config='yes'):
 
 
 def config_bgp_topology(config='yes'):
-    cutils.banner_log("{}Config BGP on devices".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config BGP on devices".format('Un' if config != 'yes' else ''))
     if config == 'yes':
         thread_info = list()
         thread_info.append(
@@ -319,7 +318,7 @@ def config_bgp_topology(config='yes'):
 
 
 def config_bgp_error_handling(config='yes'):
-    cutils.banner_log("{}Config BGP error handling".format('Un' if config != 'yes' else ''))
+    st.banner("{}Config BGP error handling".format('Un' if config != 'yes' else ''))
     action = 'enable' if config == 'yes' else 'disable'
     ehapi.config_bgp_error_handling(vars.D1, action=action)
 
@@ -512,7 +511,7 @@ def test_ft_eh_nt_notify():
     """
     Author : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
     """
-    cutils.banner_log('Test cases covered - '
+    st.banner('Test cases covered - '
                       'ft_eh_nt_noty_not_found, ft_eh_nt_noty_parms_check, '
                       'ft_eh_clear_error_database, ft_eh_error_creat_delete')
 
@@ -529,7 +528,7 @@ def test_ft_eh_nt_notify():
     entry4 = {'nexthop': eh_data.ipv6_nbr3, 'interface': vars.D1D2P1}
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry1, entry2, entry3, entry4, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
         result = False
 
     st.log("Now delete the Neighbor from bcmshell")
@@ -558,27 +557,27 @@ def test_ft_eh_nt_notify():
               'operation': "remove"}
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry1, entry2, entry3, entry4, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_not_found), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_not_found), delimiter="*")
         result = False
 
     st.log("Now create the same Neighbor from CLI the entry from error db should go away on successful addition")
     config_nbr2("add")
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry1, entry2, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format("Entry Go Away"), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format("Entry Go Away"), delimiter="*")
         result = False
 
     st.log("Check if the other failed entries are still remaining")
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry3, entry4, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format("Other Entry"), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format("Other Entry"), delimiter="*")
         result = False
 
     st.log("Clear error database for '{}'".format(eh_data.error_neigh_table))
     ehapi.clear_error_db(vars.D1, eh_data.error_neigh_table)
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry3, entry4, result=False, ifname_type=vars.config.ifname_type):
         st.error("Post clear error db - entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format("Clear Command"), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format("Clear Command"), delimiter="*")
         result = False
 
     config_nbr2("delete")
@@ -590,7 +589,7 @@ def test_ft_eh_rt_notify():
     """
     Author : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
     """
-    cutils.banner_log('Test cases covered - '
+    st.banner('Test cases covered - '
                       'ft_eh_rt_noty_entry_exist, ft_eh_rt_noty_parms_check,'
                       ' ft_eh_clear_error_database, ft_eh_error_creat_delete')
 
@@ -613,7 +612,7 @@ def test_ft_eh_rt_notify():
 
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, entry3, entry4, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
         result = False
 
     st.log("Now delete the route from bcm shell")
@@ -636,7 +635,7 @@ def test_ft_eh_rt_notify():
 
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, entry3, entry4, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_not_found), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_not_found), delimiter="*")
         result = False
 
     st.log("Create ipv4/ipv6 route from bcmshell")
@@ -660,27 +659,27 @@ def test_ft_eh_rt_notify():
 
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, entry3, entry4, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
         result = False
 
     st.log("Now deleting the same routes from CLI the entry from error db should go away on successful deletion")
     config_route2("delete")
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry3, entry4, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format('Entry Go Away'), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format('Entry Go Away'), delimiter="*")
         result = False
 
     st.log("Check if the other failed entries are still remaining")
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format('Other Entry'), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format('Other Entry'), delimiter="*")
         result = False
 
     st.log("Clear error database for '{}'".format(eh_data.error_route_table))
     ehapi.clear_error_db(vars.D1, eh_data.error_route_table)
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, result=False, ifname_type=vars.config.ifname_type):
         st.error("Post clear error db - entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format('Clear Command'), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format('Clear Command'), delimiter="*")
         result = False
 
     config_route("delete")
@@ -692,7 +691,7 @@ def test_ft_eh_bgp_route_notify():
     """
     Author : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
     """
-    cutils.banner_log('Test cases covered - ft_eh_bgp_route_notify')
+    st.banner('Test cases covered - ft_eh_bgp_route_notify')
     result = True
     st.log("Setting components severity to INFO")
     logapi.set_logging_severity(vars.D1, severity="INFO", comp=['orchagent', 'fpmsyncd'])
@@ -707,7 +706,7 @@ def test_ft_eh_bgp_route_notify():
               'failure': eh_data.swss_rc_exists, 'interface': vars.D1D2P1, 'operation': 'create'}
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
         result = False
 
     log_out = logapi.show_logging(vars.D1, lines=200)
@@ -733,7 +732,7 @@ def test_ft_eh_rt_bgp_plus_static_routes():
     """
     Author : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
     """
-    cutils.banner_log('Test cases covered - ft_eh_rt_bgp_plus_static_routes ')
+    st.banner('Test cases covered - ft_eh_rt_bgp_plus_static_routes ')
     result = True
 
     ehapi.eh_bcm_debug_show(vars.D1, af='both', table_type='route', ifname_type=vars.config.ifname_type)
@@ -756,7 +755,7 @@ def test_ft_eh_rt_bgp_plus_static_routes():
     entry2 = {'route': eh_data.loopback6_1, 'subnet': '128', 'interface': vars.D1D2P1}
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_success), delimiter="*")
         result = False
 
     st.log("Trying to add same ipv4/ipv6 BGP route from cli")
@@ -770,7 +769,7 @@ def test_ft_eh_rt_bgp_plus_static_routes():
 
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_route_table, entry1, entry2, result=False, ifname_type=vars.config.ifname_type):
         st.error("entry_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_exists), delimiter="*")
         result = False
 
     config_bgp_redistribute('no')
@@ -780,7 +779,7 @@ def test_ft_eh_rt_bgp_plus_static_routes():
 
 @pytest.mark.error_handling_ft
 def test_ft_eh_redis_cli():
-    cutils.banner_log('Test cases covered - ft_eh_show_redis, ft_eh_clear_redis')
+    st.banner('Test cases covered - ft_eh_show_redis, ft_eh_clear_redis')
     result = True
     st.log("Create a ipv4 and ipv6 Neighbor from CLI")
     config_nbr2("add")
@@ -859,7 +858,7 @@ def test_ft_eh_nt_notify_table_full():
     """
     Author : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
     """
-    cutils.banner_log('Test cases covered - ft_eh_nt_notify_table_full')
+    st.banner('Test cases covered - ft_eh_nt_notify_table_full')
     result = True
     st.log(" Set the all the entries in l3_entry_only table to valid to simulate {}".format(eh_data.swss_rc_table_full))
     if not asicapi.bcmcmd_l3_entry_only_config(vars.D1, action="add"):
@@ -876,7 +875,7 @@ def test_ft_eh_nt_notify_table_full():
     #Hardcoded the cli type as click as the support to add/replace the neighbor is not availalbe in klish.
     if not ehapi.verify_show_error_db_multi(vars.D1, eh_data.error_neigh_table, entry1, entry2, ifname_type=vars.config.ifname_type):
         st.error("entry_not_found_in_error_db")
-        cutils.banner_log('{} - Test Validation Failed '.format(eh_data.swss_rc_table_full), delimiter="*")
+        st.banner('{} - Test Validation Failed '.format(eh_data.swss_rc_table_full), delimiter="*")
         result = False
 
     st.log("Now reset all the entries in l3 entry table")

@@ -2,8 +2,6 @@ import pytest
 import datetime
 
 from spytest import st, tgapi, SpyTestDict
-from spytest.utils import filter_and_select
-from spytest.utils import poll_wait
 
 import apis.routing.ip as ipfeature
 import apis.system.port as papi
@@ -11,6 +9,8 @@ import apis.routing.bgp as bgpfeature
 import apis.system.interface as interface_obj
 import apis.system.basic as basic_obj
 import apis.common.asic_bcm as asicapi
+
+from utilities.common import iterable, filter_and_select, poll_wait
 
 data = SpyTestDict()
 data.as_num_1 = 100
@@ -313,8 +313,7 @@ def check_intf_traffic_counters(dut, port, loopCnt):
 
 	while iter <= loopCnt:
 		output = papi.get_interface_counters_all(dut, port=port)
-		output = papi.get_interface_counters_all(dut, port=port)
-		for entry in output:
+		for entry in iterable(output):
 			if entry["iface"] == port:
 				DUT_tx_value = entry["tx_pps"]
 		p2_txmt = DUT_tx_value
@@ -371,14 +370,6 @@ def verify_bgp_route_count(dut,family='ipv4',shell="sonic",**kwargs):
 			if kwargs['state'] == 'Established':
 				if entries['state'].isdigit():
 					return entries['state']
-				else:
-					return 0
-			else:
-				return 0
-		else:
-			return 0
-	else:
-		return 0
 	return 0
 
 @pytest.fixture(scope="function")

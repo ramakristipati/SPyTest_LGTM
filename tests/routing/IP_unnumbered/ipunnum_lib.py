@@ -136,11 +136,11 @@ def unnumbered_ospf_scale(**kwargs):
                              [ospf_obj.config_ospf_network, data.dut2, dut2_loopback_ip[0]+'/'+ip_loopback_prefix, 0, 'default', '','yes'],
                              [ospf_obj.config_ospf_network, data.dut3, dut3_loopback_ip[0]+'/'+ip_loopback_prefix, 0, 'default', '','yes']])
 
-        for d12ports, d21ports in zip(data.d1_d2_ports, data.d2_d1_ports): 
+        for d12ports, d21ports in zip(data.d1_d2_ports, data.d2_d1_ports):
             utils.exec_all(True,[[ospf_obj.config_interface_ip_ospf_network_type, data.dut1, d12ports,'point-to-point','default','yes'],
                              [ospf_obj.config_interface_ip_ospf_network_type, data.dut2, d21ports,'point-to-point','default','yes']])
 
-        for d23ports, d32ports in zip(data.d2_d3_ports, data.d3_d2_ports): 
+        for d23ports, d32ports in zip(data.d2_d3_ports, data.d3_d2_ports):
             utils.exec_all(True,[[ospf_obj.config_interface_ip_ospf_network_type, data.dut2, d23ports,'point-to-point','default','yes'],
                              [ospf_obj.config_interface_ip_ospf_network_type, data.dut3, d32ports,'point-to-point','default','yes']])
 
@@ -150,11 +150,11 @@ def unnumbered_ospf_scale(**kwargs):
         return result
 
     else:
-        for d12ports, d21ports in zip(data.d1_d2_ports, data.d2_d1_ports): 
+        for d12ports, d21ports in zip(data.d1_d2_ports, data.d2_d1_ports):
             utils.exec_all(True,[[ospf_obj.config_interface_ip_ospf_network_type, data.dut1, d12ports,'point-to-point','default','no'],
                              [ospf_obj.config_interface_ip_ospf_network_type, data.dut2, d21ports,'point-to-point','default','no']])
 
-        for d23ports, d32ports in zip(data.d2_d3_ports, data.d3_d2_ports): 
+        for d23ports, d32ports in zip(data.d2_d3_ports, data.d3_d2_ports):
             utils.exec_all(True,[[ospf_obj.config_interface_ip_ospf_network_type, data.dut2, d23ports,'point-to-point','default','no'],
                              [ospf_obj.config_interface_ip_ospf_network_type, data.dut3, d32ports,'point-to-point','default','no']])
 
@@ -327,7 +327,6 @@ def redistribute_routes(**kwargs):
 def tg_streams(**kwargs):
     st.banner('Configure IPv4 raw streams on DUT1 and DUT3')
     d1_gateway_mac = mac_obj.get_sbin_intf_mac(data.dut1,'eth0')
-    d3_gateway_mac = mac_obj.get_sbin_intf_mac(data.dut3,'eth0')
     st1 = data.tg.tg_traffic_config(port_handle = data.tg_dut1_p1, port_handle2 = data.tg_dut3_p1, duration = 5, mac_src='00:11:01:00:00:01', mac_dst = str(d1_gateway_mac), l2_encap = 'ethernet_ii', ip_src_addr = tg_dut1_ip[0], ip_dst_addr = tg_dut3_ip[0], l3_protocol='ipv4', mode='create', transmit_mode='continuous', length_mode='fixed', rate_pps = 2000)
     data.d1_stream_list.update({'stream_v4_d1_p1':st1['stream_id']})
 

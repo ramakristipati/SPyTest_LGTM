@@ -82,7 +82,7 @@ def warm_reboot_node(dut):
     st.config(vars.D1, cmd)
     cmd = "config warm_restart bgp_timer 120"
     st.config(vars.D1, cmd)
-    cmd = "config warm_restart neighsyncd_timer 100"
+    #cmd = "config warm_restart neighsyncd_timer 100"
 
     #st.show(dut, "show warm_restart config")
 
@@ -241,8 +241,8 @@ def check_intf_traffic_counters():
     ret = compare_intf_traffic_stats(entry1, entry2, 2)
     if ret is True:
         return True
-    DUT_rx_value = papi.get_interface_counters(dut1, vars.D1T1P2, "rx_bps")
-    DUT_tx_value = papi.get_interface_counters(dut1, vars.D1T1P1, "tx_bps")
+    papi.get_interface_counters(dut1, vars.D1T1P2, "rx_bps")
+    papi.get_interface_counters(dut1, vars.D1T1P1, "tx_bps")
     ret = compare_intf_traffic_stats(entry1, entry2, data.counters_threshold)
 
 
@@ -376,10 +376,8 @@ def create_bgp_neighbor_route_map_config(dut, local_asn, neighbor_ip, routemap, 
     st.vtysh_config(dut, command)
     command = "neighbor {} route-map {} in".format(neighbor_ip, routemap)
     st.vtysh_config(dut, command)
-    command = "neighbor {} route-map {} out".format(neighbor_ip, routemap)
+    #command = "neighbor {} route-map {} out".format(neighbor_ip, routemap)
     return
-
-
 
 def verify_bgp_route_count(dut,family='ipv4',shell="sonic",**kwargs):
     if family.lower() == 'ipv4':
@@ -397,14 +395,6 @@ def verify_bgp_route_count(dut,family='ipv4',shell="sonic",**kwargs):
             if kwargs['state'] == 'Established':
                 if entries['state'].isdigit():
                     return entries['state']
-                else:
-                   return 0
-            else:
-                return 0
-        else:
-            return 0
-    else:
-        return 0
     return 0
 
 
@@ -443,7 +433,7 @@ def pre_configure_ipv6_route_scale(vrf_flag):
     create_bgp_neighbor_route_map_config(dut, data.as_num, data.neigh_ipv6_addr, data.routemap, vrf_flag)
     if vrf_flag is True:
         bgpfeature.create_bgp_router(dut, "10", '')
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = data.member3, skip_error = True, config = 'yes')
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = data.member4, skip_error = True, config = 'yes')
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', addr_family ='ipv6', local_as = data.as_num, neighbor = data.neigh_ipv6_addr, remote_as = data.remote_as_num, keep_alive='60', routeMap='preferGlobal', diRection='in', holdtime='180', config = 'yes', config_type_list =['neighbor','activate','nexthop_self', 'routeMap'])
@@ -469,8 +459,6 @@ def pre_configure_ipv6_route_scale(vrf_flag):
 
   # Configuring BGP device on top of interface.
     # Initializing dict_vars for easy readability.
-    ctrl_start = { 'mode' : 'start'}
-    ctrl_stop = { 'mode' : 'stop'}
     data.bgp_conf=data.tg1.tg_emulation_bgp_config(handle=data.h1['handle'], mode='enable', ip_version='6',
         active_connect_enable='1', local_as='200', remote_as='100', remote_ipv6_addr='2000::1')
 
@@ -524,7 +512,7 @@ def post_configure_ipv6_route_scale(vrf_flag):
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', local_as = data.as_num, neighbor = data.neigh_ipv6_addr, remote_as = data.remote_as_num, keep_alive='60', holdtime='180', config = 'no', config_type_list =['neighbor','activate','nexthop_self'])
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = data.member3, skip_error = True, config = 'no')
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = data.member4, skip_error = True, config = 'no')
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
         delete_bgp_router(dut, '', data.as_num, vrf_flag)
     else:
         bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ipv6_addr, data.remote_as_num)
@@ -569,7 +557,7 @@ def test_ipv6_tc3_3():
         emulation_dst_handle=data.bgp_route['handle'], circuit_endpoint_type='ipv6', mode='create',
         transmit_mode='continuous', length_mode='fixed', rate_pps=512000, enable_stream_only_gen='0')
 
-    res=data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
+    data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
 
     retval = check_intf_traffic_counters()
     if retval is True:
@@ -599,7 +587,7 @@ def test_ipv6_tc3_5():
     #IPV6 ROUTE SCALE TEST CASE 3.5 START
     clear_ndp_entries(dut)
     st.wait(20)
-    res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
+    verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
                                                                 ping_count='6', exp_count='6')
     res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2000::1',\
                                                                 ping_count='6', exp_count='6')
@@ -618,7 +606,7 @@ def test_ipv6_tc3_6():
     #IPV6 ROUTE SCALE TEST CASE 3.6 START
     clear_ip_bgp(dut)
     st.wait(20)
-    res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
+    verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
                                                                 ping_count='6', exp_count='6')
     res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2000::1',\
                                                                 ping_count='6', exp_count='6')
@@ -638,7 +626,7 @@ def test_ipv6_tc3_7():
     macapi.clear_mac(dut)
 
     st.wait(20)
-    res3=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
+    verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
                                                                 ping_count='6', exp_count='6')
     res3=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2000::1',\
                                                                 ping_count='6', exp_count='6')
@@ -730,11 +718,11 @@ def create_l3_route(route_count, vrf_flag):
     vars = st.get_testbed_vars()
     member3 = vars.D1T1P1
     member4 = vars.D1T1P2
-    tc_fail_flag = 0
+
     ipfeature.config_ip_addr_interface(dut, member3, data.my_ip_addr, data.ip_prefixlen, family="ipv4")
 
     if vrf_flag is True:
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member3, skip_error = True, config = 'yes')
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member4, skip_error = True, config = 'yes')
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', local_as = data.as_num,
@@ -787,9 +775,9 @@ def create_l3_route(route_count, vrf_flag):
         mode='create', transmit_mode='continuous', length_mode='fixed', rate_pps=512000, enable_stream_only_gen='0')
 
     if vrf_flag is False:
-        retval = bgpfeature.verify_bgp_summary(dut, neighbor=data.neigh_ip_addr, state='Established')
+        bgpfeature.verify_bgp_summary(dut, neighbor=data.neigh_ip_addr, state='Established')
     else:
-        retval = verify_bgp_session_summary(dut, vrf_flag='True', neighbor=data.neigh_ip_addr, state='Established')
+        verify_bgp_session_summary(dut, vrf_flag='True', neighbor=data.neigh_ip_addr, state='Established')
 
     st.wait(10)
     output = st.show(dut, "bcmcmd \"l3 defip show\" | wc -l", skip_tmpl=True,
@@ -808,7 +796,7 @@ def create_l3_route(route_count, vrf_flag):
 
     res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
     st.log("TR_CTRL: "+str(res))
-    bgp_rtr2 = tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var=ctrl_stop)
+    tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var=ctrl_stop)
     ipfeature.delete_ip_interface(dut, member4, data.intf_ip_addr)
     ipfeature.delete_ip_interface(dut, member3, data.my_ip_addr)
     bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)
@@ -828,8 +816,6 @@ def create_l3_route_ipv6(vrf_flag, route_count):
     (dut) = (data.dut)
     vars = st.get_testbed_vars()
     member3 = vars.D1T1P1
-    member4 = vars.D1T1P2
-    tc_fail_flag = 0
 
     ipfeature.config_ip_addr_interface(dut, member3, data.my_ipv6_addr, data.ipv6_prefixlen, family="ipv6")
     #bgpfeature.create_bgp_router(dut, data.as_num, data.router_id)
@@ -837,7 +823,7 @@ def create_l3_route_ipv6(vrf_flag, route_count):
     create_bgp_neighbor_route_map_config(dut, data.as_num, data.neigh_ipv6_addr, data.routemap, vrf_flag)
     if vrf_flag is True:
         bgpfeature.create_bgp_router(dut, "10", '')
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member3, skip_error = True, config = 'yes')
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', addr_family ='ipv6', local_as = data.as_num, neighbor = data.neigh_ipv6_addr, remote_as = data.remote_as_num, keep_alive='60', routeMap='preferGlobal', diRection='in', holdtime='180', config = 'yes', config_type_list =['neighbor','activate','nexthop_self', 'routeMap'])
         #bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, local_as = data.as_num, addr_family ='ipv6', config_type_list=["routeMap"], routeMap='UseGlobal', diRection='in', neighbor=dut1_dut2_vrf_ipv6[0])
@@ -856,19 +842,17 @@ def create_l3_route_ipv6(vrf_flag, route_count):
         ipv6_prefix_length='64', ipv6_gateway='2000::1', src_mac_addr='00:0a:01:00:00:01', arp_send_req='1')
     st.log("INTFCONF: "+str(h1))
 
-    ctrl_start = { 'mode' : 'start'}
-    ctrl_stop = { 'mode' : 'stop'}
-    bgp_conf=tg1.tg_emulation_bgp_config(handle=h1['handle'], mode='enable', ip_version='6', active_connect_enable='1', local_as='200', remote_as='100',
-        remote_ipv6_addr='2000::1', netmask_ipv6='128')
+    bgp_conf=tg1.tg_emulation_bgp_config(handle=h1['handle'], mode='enable', ip_version='6',
+         active_connect_enable='1', local_as='200', remote_as='100', remote_ipv6_addr='2000::1', netmask_ipv6='128')
 
-    bgp_route=tg1.tg_emulation_bgp_route_config(handle=bgp_conf['handle'], mode='add', ip_version='6', num_routes=route_count, prefix='3300:1::',
-        as_path='as_seq:1')
+    tg1.tg_emulation_bgp_route_config(handle=bgp_conf['handle'], mode='add', ip_version='6',
+         num_routes=route_count, prefix='3300:1::', as_path='as_seq:1')
     bgp_ctrl=tg1.tg_emulation_bgp_control(handle=bgp_conf['handle'], mode='start')
 
     st.log("BGP neighborship established.")
 
     if vrf_flag is False:
-        retval = bgpfeature.verify_bgp_summary(dut, family='ipv6', neighbor=data.neigh_ipv6_addr, state='Established')
+        bgpfeature.verify_bgp_summary(dut, family='ipv6', neighbor=data.neigh_ipv6_addr, state='Established')
     else:
         verify_bgp_session_summary(dut, family='ipv6', vrf_flag='True', neighbor=data.neigh_ipv6_addr, state='Established')
 
@@ -900,7 +884,7 @@ def create_l3_route_ipv6(vrf_flag, route_count):
         delete_bgp_router(dut, '', "10", temp_flag)
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', local_as = data.as_num, neighbor = data.neigh_ipv6_addr, remote_as = data.remote_as_num, keep_alive='60', holdtime='180', config = 'no', config_type_list =['neighbor','activate','nexthop_self'])
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member3, skip_error = True, config = 'no')
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
     else:
         bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ipv6_addr, data.remote_as_num)
         #delete_bgp_neighbor_route_map_config(dut, data.as_num, data.neigh_ipv6_addr, data.routemap)
@@ -927,7 +911,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
     ipfeature.config_ip_addr_interface(dut, member3, data.my_ip_addr, data.ip_prefixlen, family="ipv4")
     ipfeature.config_ip_addr_interface(dut, member4, data.intf_ip_addr, data.ip_prefixlen, family="ipv4")
     if vrf_flag is True:
-        out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
+        vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True)
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member3, skip_error = True, config = 'yes')
         vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member4, skip_error = True, config = 'yes')
         bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', local_as = data.as_num, neighbor = data.neigh_ip_addr, remote_as = data.remote_as_num, keep_alive='60', holdtime='180', config = 'yes', config_type_list =['neighbor','activate','nexthop_self'])
@@ -1177,7 +1161,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
     if long_run_flag is False:
         res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
         st.log("TR_CTRL: "+str(res))
-        bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+        tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
         tg2.tg_traffic_control(action='reset',port_handle=tg_ph_2)
         tg1.tg_interface_config(port_handle=tg_ph_1, handle=h1['handle'], mode='destroy')
         tg2.tg_interface_config(port_handle=tg_ph_2, handle=h2['handle'], mode='destroy')
@@ -1185,7 +1169,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
             bgpfeature.config_bgp(dut = dut, vrf_name = data.vrf, router_id = '', local_as = data.as_num, neighbor = data.neigh_ip_addr, remote_as = data.remote_as_num, config = 'no', config_type_list =['neighbor','activate','nexthop_self'])
             vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member3, skip_error = True, config = 'no')
             vrf_api.bind_vrf_interface(dut = dut, vrf_name = data.vrf, intf_name = member4, skip_error = True, config = 'no')
-            out = vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
+            vrf_api.config_vrf(dut = dut, vrf_name = data.vrf, skip_error = True,  config = 'no')
         else:
             bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)
             delete_bgp_router(dut, '', data.as_num, vrf_flag)
@@ -1250,7 +1234,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
 
     res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
     st.log("TR_CTRL: "+str(res))
-    bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+    tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
     ipfeature.delete_ip_interface(dut, member4, data.intf_ip_addr)
     ipfeature.delete_ip_interface(dut, member3, data.my_ip_addr)
     bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)
@@ -1440,7 +1424,7 @@ def test_ipv6_tc4_3():
         emulation_dst_handle=data.bgp_route['handle'], circuit_endpoint_type='ipv6', mode='create',
         transmit_mode='continuous', length_mode='fixed', rate_pps=512000, enable_stream_only_gen='0')
 
-    res=data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
+    data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
 
     retval = check_intf_traffic_counters()
     if retval is True:
@@ -1469,7 +1453,7 @@ def test_ipv6_tc4_4():
         emulation_dst_handle=data.bgp_route['handle'], circuit_endpoint_type='ipv6', mode='create',
         transmit_mode='continuous', length_mode='fixed', rate_pps=512000, enable_stream_only_gen='0')
 
-    res=data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
+    data.tg2.tg_traffic_control(action='run', handle=data.tr2['stream_id'])
 
     retval = check_intf_traffic_counters()
     if retval is True:
@@ -1500,11 +1484,10 @@ def test_ipv6_tc4_6():
     #IPV6 ROUTE SCALE TEST CASE 3.5 START
     clear_ndp_entries(dut)
     st.wait(20)
-    res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
+    verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2200::1',\
                                                                 ping_count='6', exp_count='6')
     res2=verify_ping(src_obj=data.tg1, port_handle=data.tg_ph_1, dev_handle=data.h2['handle'], dst_ip='2000::1',\
                                                                 ping_count='6', exp_count='6')
-
     if res2:
         st.log("Interface Scaling Test Case 3.5 PASSED PING TEST")
     retval = check_intf_traffic_counters()
