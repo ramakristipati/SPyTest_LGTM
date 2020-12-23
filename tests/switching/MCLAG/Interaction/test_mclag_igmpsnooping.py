@@ -1,7 +1,7 @@
 import pytest
+
 from spytest import st, tgapi, SpyTestDict
-from utilities.common import make_list
-from utilities.parallel import exec_foreach, ensure_no_exception, exec_parallel, exec_all, ExecAllFunc
+
 import apis.switching.portchannel as portchannel
 import apis.switching.vlan as vapi
 import apis.routing.ip as ip
@@ -9,7 +9,10 @@ import apis.switching.mclag as mclag
 import apis.switching.igmp_snooping as igmp_snp
 import apis.system.interface as intf
 import apis.system.basic as basic_obj
+
 import utilities.utils as utils
+from utilities.common import make_list
+from utilities.parallel import exec_foreach, ensure_no_exception, exec_parallel, exec_all, ExecAllFunc
 
 data = SpyTestDict()
 vars = dict()
@@ -297,9 +300,9 @@ def module_config():
         if value.get("mc_lag_intf_data"):
             mclag_intf_data = value.get("mc_lag_intf_data")
             mclag_verify_intf_dict = {'domain_id': mclag_intf_data["domain_id"]}
-            for key, value in mclag_intf_data.items():
-                if key != "domain_id":
-                    mclag_verify_intf_dict.update({'mclag_intf': key, 'mclag_intf_local_state': value['local_state'], 'mclag_intf_peer_state': value['remote_state'], 'isolate_peer_link': value['isolate_with_peer'], 'traffic_disable': value['traffic_disable']})
+            for key1, value1 in mclag_intf_data.items():
+                if key1 != "domain_id":
+                    mclag_verify_intf_dict.update({'mclag_intf': key1, 'mclag_intf_local_state': value1['local_state'], 'mclag_intf_peer_state': value1['remote_state'], 'isolate_peer_link': value1['isolate_with_peer'], 'traffic_disable': value1['traffic_disable']})
             data.mclag_verify_intf_data.append(mclag_verify_intf_dict)
 
     utils.banner_log("MODULE VARIABLES DATA")

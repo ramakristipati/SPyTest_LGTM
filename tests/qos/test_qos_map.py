@@ -3,12 +3,14 @@ import pytest
 from spytest import st, tgapi
 
 import apis.qos.qos as qos_api
-import apis.qos.cos as qos_map
+import apis.qos.cos as cos_api
 import apis.system.switch_configuration as sw_conf
 import apis.routing.arp as arp
 import apis.routing.ip as ip
 import apis.switching.vlan as sw_vla
+from apis.system import basic
 
+#import tests.qos.qos_map as qos_map
 from tests.qos.qos_map import *
 
 @pytest.fixture(scope="module", autouse=True)
@@ -88,12 +90,12 @@ def test_StSoQosConf011(qos_vlan_hooks):
     clear_tgen_stats('start')
     qos_api.clear_qos_queue_counters(vars.D1)
     st.log("configure tc to queue map")
-    qos_map.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_1)
+    cos_api.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_1)
     qos_api.bind_qos_map_port(vars.D1,"tc_to_queue_map",obj_name,d1_p1)
 
     qos_api.clear_qos_config(dut=vars.D1)
     st.log("modify TC 2,5 to queue 5,2 respectively")
-    qos_map.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_2)
+    cos_api.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_2)
     qos_api.bind_qos_map_port(vars.D1, "tc_to_queue_map", obj_name, d1_p1)
     st.log("verify modified qos map for TC 2,5 in running config")
     for tc,que in zip(tc2,qval2):
@@ -112,7 +114,7 @@ def test_StSoQosConf011(qos_vlan_hooks):
 
     qos_api.clear_qos_config(dut=vars.D1)
     st.log("revert TC 2,5 values")
-    qos_map.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_1)
+    cos_api.config_tc_to_queue_map(vars.D1,obj_name,tc_to_queue_map_1)
     qos_api.bind_qos_map_port(vars.D1, "tc_to_queue_map", obj_name, d1_p1)
     st.log("verify reverted qos map in running config")
     for tc,que in zip(tc1,qval1):
@@ -140,12 +142,12 @@ def test_StSoQosConf012(qos_ip_hooks):
 
     clear_tgen_stats('start')
     st.log("configure DSCP to TC map")
-    qos_map.config_dscp_to_tc_map(dut=vars.D1,obj_name=obj_name,dscp_to_tc_map_dict=dscp_to_tc_map_1)
+    cos_api.config_dscp_to_tc_map(dut=vars.D1,obj_name=obj_name,dscp_to_tc_map_dict=dscp_to_tc_map_1)
     qos_api.create_qos_json(dut=vars.D1, block_name=port_qos_map, sub_block=d1_p1,dict_input=dscp_bind_port)
 
     qos_api.clear_qos_config(dut=vars.D1)
     st.log("modify DSCP 20,46 to queue 2,4 respectively")
-    qos_map.config_dscp_to_tc_map(dut=vars.D1, obj_name=obj_name, dscp_to_tc_map_dict=dscp_to_tc_map_2)
+    cos_api.config_dscp_to_tc_map(dut=vars.D1, obj_name=obj_name, dscp_to_tc_map_dict=dscp_to_tc_map_2)
     qos_api.create_qos_json(dut=vars.D1, block_name=port_qos_map, sub_block=d1_p1, dict_input=dscp_bind_port)
     st.log("verify modified qos map for DSCP 20,46 in running config")
     for dscp,tc in zip(dscp_val_2,tc_val_2):
@@ -164,7 +166,7 @@ def test_StSoQosConf012(qos_ip_hooks):
 
     qos_api.clear_qos_config(dut=vars.D1)
     st.log("revert DSCP 20,46 values")
-    qos_map.config_dscp_to_tc_map(dut=vars.D1, obj_name=obj_name, dscp_to_tc_map_dict=dscp_to_tc_map_1)
+    cos_api.config_dscp_to_tc_map(dut=vars.D1, obj_name=obj_name, dscp_to_tc_map_dict=dscp_to_tc_map_1)
     qos_api.create_qos_json(dut=vars.D1, block_name=port_qos_map, sub_block=d1_p1, dict_input=dscp_bind_port)
     st.log("verify reverted qos map in running config")
     for dscp,tc in zip(dscp_val_3,tc_val_3):
@@ -319,11 +321,11 @@ def test_StSoQoSVer001(qos_ip_hooks):
 
     clear_tgen_stats('start')
     st.log("configure tc to queue map")
-    qos_map.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_1)
+    cos_api.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_1)
     qos_api.bind_qos_map_port(vars.D1, "tc_to_queue_map", obj_name, d1_p1)
 
     st.log("modify TC 2,5 to queue 5,2 respectively")
-    qos_map.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_2)
+    cos_api.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_2)
     st.log("verify modified qos map for TC 2,5 in running config")
     for tc, que in zip(tc2, qval2):
         if not sw_conf.verify_running_config(vars.D1, tc_queue_map, obj_name, tc, que):
@@ -341,7 +343,7 @@ def test_StSoQoSVer001(qos_ip_hooks):
         success = False
 
     st.log("revert TC 2,5 values")
-    qos_map.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_1)
+    cos_api.config_tc_to_queue_map(vars.D1, obj_name, tc_to_queue_map_1)
     st.log("verify reverted qos map in running config")
     for tc, que in zip(tc1, qval1):
         if not sw_conf.verify_running_config(vars.D1, tc_queue_map, obj_name, tc, que):
@@ -406,3 +408,4 @@ def test_StSoQoSVer003(qos_sched_hooks):
         st.report_pass("test_case_id_passed","StSoQoSVer003")
     else:
         st.report_fail("test_case_id_failed","StSoQoSVer003")
+

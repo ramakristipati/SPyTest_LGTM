@@ -1,6 +1,9 @@
+
+import random
+import math
+
 from spytest import st, tgapi, SpyTestDict
-from spytest.utils import filter_and_select
-from utilities.parallel import exec_foreach, ensure_no_exception, exec_parallel, exec_all, ExecAllFunc
+
 import apis.switching.portchannel as portchannel
 import apis.switching.vlan as vapi
 import apis.routing.ip as ip
@@ -11,10 +14,11 @@ import apis.system.interface as intf
 import apis.system.basic as basic
 import apis.system.reboot as reboot
 import apis.system.logging as slog
-import utilities.utils as utils
 import apis.system.port as papi
-import random
-import math
+import utilities.utils as utils
+
+from utilities.common import filter_and_select
+from utilities.parallel import exec_foreach, ensure_no_exception, exec_parallel, exec_all, ExecAllFunc
 
 data = SpyTestDict()
 tg_dict = dict()
@@ -847,7 +851,6 @@ def module_config(vars, stp_protocol, topology_2_tier, topology_scale=False, ini
                 if data.topology_2_tier:
                     portchannel_data[data[key]] = value.get("port_channel")
                 else:
-                    temp = dict()
                     temp = value.get("port_channel")
                     if key  == "MCLAG_2_A":
                         temp.pop(data.MCLAG_2_A_MC_Lag_2, None)
@@ -917,9 +920,9 @@ def module_config(vars, stp_protocol, topology_2_tier, topology_scale=False, ini
             if value.get("mc_lag_intf_data"):
                 mclag_intf_data = value.get("mc_lag_intf_data")
                 mclag_verify_intf_dict = {'domain_id': mclag_intf_data["domain_id"]}
-                for key, value in mclag_intf_data.items():
-                    if key != "domain_id":
-                        mclag_verify_intf_dict.update({'mclag_intf': key, 'mclag_intf_local_state': value['local_state'], 'mclag_intf_peer_state': value['remote_state'], 'isolate_peer_link': value['isolate_with_peer'], 'traffic_disable': value['traffic_disable']})
+                for key1, value1 in mclag_intf_data.items():
+                    if key1 != "domain_id":
+                        mclag_verify_intf_dict.update({'mclag_intf': key1, 'mclag_intf_local_state': value1['local_state'], 'mclag_intf_peer_state': value1['remote_state'], 'isolate_peer_link': value1['isolate_with_peer'], 'traffic_disable': value1['traffic_disable']})
                 data.mclag_verify_intf_data.append(mclag_verify_intf_dict)
                 if mclag_intf_data["domain_id"] == data.MCLAG_1_DOMAIN_ID:
                     data.mclag_verify_intf_data_domain_1.append(mclag_verify_intf_dict)

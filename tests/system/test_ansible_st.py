@@ -57,10 +57,10 @@ def test_StSoMaVer011():
             tmp = tmp.replace('"', '')
             tmp = tmp.split(":")
             aging_time = int(tmp[1])
-            new_aging_time = aging_time / 10
+            new_aging_time = int(aging_time / 10)
             cmd = "sed -i 's/\"fdb_aging_time\": \"{}\"/\"fdb_aging_time\": \"{}\"/g' {}".\
                 format(aging_time, new_aging_time, cfg_db_json)
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             st.log("modified fdb_aging_time value from {} to {} in file {}".
                    format(aging_time, new_aging_time, file_name))
         else:

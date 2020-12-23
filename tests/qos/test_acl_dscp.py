@@ -1,17 +1,18 @@
 import pytest
 import random
-from utilities.parallel import exec_all, ensure_no_exception
 from spytest import st, tgapi, SpyTestDict
-from spytest.utils import random_vlan_list
 import apis.system.reboot as reboot_api
 import apis.qos.acl_dscp as acl_dscp
 import apis.switching.vlan as vlan_obj
 import apis.switching.portchannel as pc_obj
-import apis.qos.acl as acl_obj
 from apis.routing.ip import config_ip_addr_interface
 from apis.qos.acl import create_acl_table, create_acl_rule, apply_acl_config
+from apis.qos.acl import show_acl_counters
 
 import tests.qos.acl.acl_json_config as acl_data
+
+from utilities.parallel import exec_all
+from utilities.common import random_vlan_list
 
 data = SpyTestDict()
 
@@ -88,8 +89,7 @@ def acl_dscp_module_hook(request):
     global vars
     vars = st.ensure_min_topology("D1T1:2")
     initialize_variables()
-    [_, exceptions] = exec_all(True, [[create_trafficStreams], [acl_dscp_pre_config]], first_on_main=True)
-    ensure_no_exception(exceptions)
+    exec_all(True, [[create_trafficStreams], [acl_dscp_pre_config]], first_on_main=True)
 
     yield
 
@@ -679,7 +679,7 @@ def test_ft_acl_dscp_negative_func():
 
     st.wait(data.traffic_duration)
     data.tg.tg_traffic_control(action='stop', stream_handle=data.streams['ipv4_stream'])
-    acl_rule_counters = acl_obj.show_acl_counters(vars.D1, acl_table=data.acl_ipv4_table_name)
+    acl_rule_counters = show_acl_counters(vars.D1, acl_table=data.acl_ipv4_table_name)
     for rule in acl_rule_counters:
         if rule['packetscnt'] == 0:
             st.error("ACL Traffic is not forwarded when no ACL is applied to the classifier")

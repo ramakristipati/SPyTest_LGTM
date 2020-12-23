@@ -2,9 +2,6 @@ import json
 import random
 
 from spytest import st, tgapi
-from spytest.utils import random_vlan_list
-from spytest.utils import exec_all
-from spytest.utils import poll_wait
 
 import apis.switching.pvst as stp
 import apis.switching.pvst_elasticity_wrapper as stp_wrap
@@ -19,10 +16,10 @@ import apis.system.logging as slog
 import apis.system.reboot as reboot
 import apis.system.rest as rest_obj
 import apis.system.gnmi as gnmi_obj
-from apis.system.basic import cmd_validator
 
 import utilities.utils as utils
 import utilities.common as common_obj
+from utilities.parallel import exec_all
 
 stp_dict = {"pvst": {"stp_wait_time": 40, "non_fwd_state": "BLOCKING"}, "rpvst": {"non_fwd_state": "DISCARDING"}}
 
@@ -556,7 +553,7 @@ def lib_stp_port_actions(vars, stp_ela, stp_protocol):
 
         st.log("Disabling {} at interface level on {}".format(stp_protocol,partner_dut))
         stp.config_stp_enable_interface(partner_dut, remote_interface, mode="disable")
-        if not poll_wait(stp.verify_stp_intf_status, 40, partner_dut, random_vlan, next_root_remote, 'FORWARDING'):
+        if not common_obj.poll_wait(stp.verify_stp_intf_status, 40, partner_dut, random_vlan, next_root_remote, 'FORWARDING'):
             res = 0
             st.error("Next root port on {} did not move to Forwarding state".format(partner_dut))
             stp.config_stp_enable_interface(partner_dut, remote_interface, mode="enable")
@@ -566,7 +563,7 @@ def lib_stp_port_actions(vars, stp_ela, stp_protocol):
         st.log("Enabling {} at interface level on {}".format(stp_protocol,partner_dut))
         stp.config_stp_enable_interface(partner_dut, remote_interface, mode="enable")
         st.wait(5)
-        if not poll_wait(stp.verify_stp_intf_status, 40 ,partner_dut, random_vlan, remote_interface, 'FORWARDING'):
+        if not common_obj.poll_wait(stp.verify_stp_intf_status, 40 ,partner_dut, random_vlan, remote_interface, 'FORWARDING'):
             res = 0
             st.error("Previous root port on {} did not move to Forwarding state. FAIL".format(partner_dut))
         else:
@@ -640,7 +637,7 @@ def lib_stp_port_actions(vars, stp_ela, stp_protocol):
     stp.config_spanning_tree(root_bridge, feature=stp_protocol, mode="disable", vlan=random_vlan)
     st.wait(3)
     st.log("waiting to verify the port moving to consistent state after expiry of root guard timeout")
-    if not poll_wait(stp.check_rg_current_state, rg_timeout, partner_dut, random_vlan, remote_interface):
+    if not common_obj.poll_wait(stp.check_rg_current_state, rg_timeout, partner_dut, random_vlan, remote_interface):
         res = 0
         st.error("Interface is not in consistent state even after root guard timeout")
     else:
@@ -882,7 +879,7 @@ def lib_stp_default_convergence(vars, stp_ela, stp_protocol):
     st.log("Existig vlan_list is : {}".format(vlan_list))
 
     st.log("Creating a new vlan")
-    new_vlan = random_vlan_list(count=1,exclude=vlan_list)
+    new_vlan = common_obj.random_vlan_list(count=1,exclude=vlan_list)
     st.log("new_vlan is :{}".format(new_vlan))
 
     st.log("creating new vlan in all dut_lists")
@@ -1419,7 +1416,6 @@ def lib_stp_minlink_lldp(vars, stp_ela, stp_protocol):
                 st.log(" Remote LLDP Neighbors value is: {} ".format(lldp_value_remote))
                 if not lldp_value:
                     st.error("No lldp entries are available")
-                    lldp_value = ""
                     lldp_value_gran = ""
                 else:
                     lldp_value = lldp_value[0]
@@ -1488,7 +1484,6 @@ def lib_stp_minlink_lldp(vars, stp_ela, stp_protocol):
                 st.log(" Remote LLDP Neighbors value is: {} ".format(lldp_value_remote))
                 if not lldp_value:
                     st.error("No lldp entries are available")
-                    lldp_value = ""
                     lldp_value_gran = ""
                 else:
                     lldp_value = lldp_value[0]
@@ -2046,7 +2041,8 @@ def lib_stp_stress_lag_shut_noshut(vars, stp_ela, stp_protocol):
 
     dut_test = random.choice(stp_wrap.get_dut_list(vars))
     port_channel_list = list()
-    for lag_intf in portchannel.get_portchannel_list(dut_test):
+    lag_interfaces = portchannel.get_portchannel_list(dut_test)
+    for lag_intf in common_obj.iterable(lag_interfaces):
         if stp_cli_type != "click":
             port_channel_list.append(lag_intf["name"])
         else:
@@ -2120,7 +2116,8 @@ def lib_stp_stress_shut_noshut(vars, stp_ela, stp_protocol):
     dut_test = random.choice(stp_wrap.get_dut_list(vars))
     st.banner(dut_test)
     port_channel_list = list()
-    for lag_intf in portchannel.get_portchannel_list(dut_test):
+    lag_interfaces = portchannel.get_portchannel_list(dut_test)
+    for lag_intf in common_obj.iterable(lag_interfaces):
         if stp_cli_type != "click":
             port_channel_list.append(lag_intf["name"])
         else:
@@ -2334,13 +2331,12 @@ def lib_stp_max_vlan_instances(vars, stp_ela, stp_protocol, max_stp_instances):
             max_stp_instances = 62
             st.banner("platform used : {} max stp instances value : {}".format(device, max_stp_instances))
         else:
-            max_stp_instances = max_stp_instances
             st.banner("platform used : {} max stp instances value : {}".format(device, max_stp_instances))
         max_instances.append(max_stp_instances)
-    
+
     max_stp_instances = min(max_instances)
     st.banner("Taking the min value from max instances : {}".format(max_stp_instances))
-    
+
     utils.banner_log("Checking {} convergence and traffic before the test".format(stp_protocol))
     stp.check_for_single_root_bridge_per_vlan(stp_wrap.get_dut_list(vars), stp_wrap.complete_data["vlan_data"]["vlan_list"], stp_wrap.complete_data["dut_vlan_data"])
     st.log("Waiting for {} converge".format(stp_protocol))
@@ -3117,7 +3113,7 @@ def lib_stp_gnmi(vars, protocol, stp_ela=''):
 def klish_cmd_validator(commands, stp_ela):
     random_vlan = stp_wrap.tg_info['vlan_id']
     root_bridge = stp_ela['states'][random_vlan]['root']
-    cmd_validator(root_bridge, commands, cli_type='klish')
+    basic.cmd_validator(root_bridge, commands, cli_type='klish')
 
 def verify_klish_commands(stp_ela, stp_protocol):
     """

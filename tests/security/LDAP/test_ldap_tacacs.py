@@ -3,6 +3,7 @@
 # Author: Chandra Sekhar Reddy <Chandra.vedanaparthi@broadcom.com>
 ##########################################################################################
 
+import os
 import pytest
 
 from spytest import st, SpyTestDict
@@ -10,20 +11,15 @@ from spytest import st, SpyTestDict
 import apis.switching.vlan as vlan
 import apis.routing.ip as ip
 import apis.system.interface as intf
-import utilities.parallel as pll
 import apis.system.basic as basic_api
 import apis.system.reboot as reboot_api
 import apis.routing.bgp as bgp_api
 import apis.security.ldap as ldap
 import apis.security.tacacs as tacacs
-import apis.security.radius as radius
 import apis.security.user as user
-import apis.system.interface as interface
 import apis.system.connection as ssh
 import apis.system.ssh as ssh_api
-import apis.system.management_vrf as mvrf
 from ldap_vars import *
-import os
 
 import utilities.common as utils
 
@@ -472,10 +468,8 @@ def check_aaa_login(dut,mode, Fail_through):
     ver_flag = True
     if mode == "tacacs+":
         login_method = tacacs_only
-        failthrough = Fail_through
     elif mode == "tacacs+ local":
         login_method = tacacs_local
-        failthrough = Fail_through
     result = tacacs.verify_aaa(dut,login = login_method,failthrough = Fail_through,cli_type = cli_type )
     if result == False:
         print_log('AAA Login method and Failthrough','ERROR')
@@ -604,7 +598,7 @@ def creating_local_user(dut,usernm,passwd,role,mode):
     st.log("usename1 => {}".format(usernm))
     st.log("passwd => {}".format(passwd))
     st.log("mod => {}".format(mode))
-    result = user.config(dut, username=usernm,password = passwd, role= role, no_form = mode) 
+    result = user.config(dut, username=usernm,password = passwd, role= role, no_form = mode)
     if result == False:
         st.log("Creating local user failed")
         flag = False
@@ -637,11 +631,11 @@ def ldap_module_unconfig():
 
 def ldap_basic_validations():
     '''
- 
+
     1. Verify IPv4 reachability
     2. Verify IPv6 reachability
     2. Verify the reachability of LDAP server via management interface
- 
+
 
     '''
     final_result = True
@@ -1214,7 +1208,7 @@ def test_ldap_tacacs():
     else:
        st.report_tc_pass("FtLdapScaleTacacsNssAuthSudoVrfSrcIntfv4001", \
         "LDAP_Scale_with_8_IPv4_servers_LDAP_User_with_Authentication_TACACS_Authorize_LDAP_NSS_LDAP_Passed", "test_ldap_tacacs")
- 
+
     print_log("UnConfigure  the ldap global attribute on DUT2 ..",'MED')
     unconfig_ldap_server_attributes(dut2,'ldap_global')
 
@@ -1276,7 +1270,7 @@ def test_ldap_tacacs():
     else:
         print_log("V6 Login to device with nss sudoer specific user and pam group in diff ldap server \
            with tacacs login-method verification FAILED", "HIGH")
-        ldap_nss_sudo_pam_specific_tacacs_login_v4 += 1
+        ldap_nss_sudo_pam_specific_tacacs_login_v6 += 1
         tc_result17 += 1
         final_result = False
 
@@ -1359,6 +1353,7 @@ def test_ldap_tacacs():
             fail_msg += 'IPv4:LDAP Scale sudo user login-method with src intf and vrf tacacs local with ldap authorization Failed:'
         if local_user_delete > 0:
             fail_msg += 'IPv4:LDAP user login-method ldap local user localuser deletion Failed:'
+        if ldap_nss_sudo_pam_specific_tacacs_login_v4 > 0:
             fail_msg += 'IPv4:LDAP nss sudo user login-method tacacs passwd with ldap authorization Failed:'
         if ldap_nss_sudo_pam_specific_tacacs_login_v6 > 0:
             fail_msg += 'IPv6:LDAP nss sudo user login-method tacacs passwd with ldap authorization Failed:'

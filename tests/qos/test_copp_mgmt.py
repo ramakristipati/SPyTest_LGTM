@@ -7,11 +7,11 @@ import apis.routing.ip as ip_obj
 import apis.routing.sag as sag
 import apis.common.asic as asicapi
 from apis.system.sflow import enable_disable_config, add_del_collector
+from apis.system.sflow import config_attributes
 import apis.qos.copp as copp_obj
 import apis.routing.ip_helper as ip_helper_obj
 import apis.switching.vlan as Vlan
 import apis.routing.evpn as Evpn
-import apis.system.sflow as sflow1
 import apis.system.reboot as reboot
 import apis.qos.qos_shaper as shaper
 
@@ -63,7 +63,7 @@ def copp_func_hooks(request):
 def sflow_unconfig():
     hdrMsg("Un-configure SFLOW config")
     enable_disable_config(vars.D1, interface=False, interface_name=None, action="disable")
-    sflow1.config_attributes(vars.D1,interface_name=d1_p1,sample_rate="256",no_form="yes")
+    config_attributes(vars.D1,interface_name=d1_p1,sample_rate="256",no_form="yes")
     add_del_collector(vars.D1, collector_name="", ip_address="1.1.1.1",
                             port_number=None, action="del")
 
@@ -420,7 +420,7 @@ def test_ft_user_sflow():
     success = True
     hdrMsg("TestCase Copp371: Verify COPP for sflow")
     hdrMsg("STEP 1: Configure SFLOW attributes.")
-    sflow1.config_attributes(vars.D1,interface_name=d1_p1,sample_rate="256")
+    config_attributes(vars.D1,interface_name=d1_p1,sample_rate="256")
 
     hdrMsg("STEP 2: Remove default CoPP sflow class from default CoPP Policy")
     copp_obj.bind_class_action_copp_policy(vars.D1,classifier="copp-system-sflow",action_group="copp-system-sflow",config="no")
@@ -456,7 +456,7 @@ def test_ft_user_sflow():
 
     if st.get_ui_type() in ['rest-put', 'rest-patch', 'rest-post']:
         hdrMsg("STEP 5: Verify user defined ARP class-map/copp-trap and user defined copp-action-group/copp-group binding to system CoPP Policy")
-        res = copp_obj.verify_policy_type_copp(dut=vars.D1,copp_fgroup="copp-user-arp",copp_agroup="copp-user-arp-action", \
+        copp_obj.verify_policy_type_copp(dut=vars.D1,copp_fgroup="copp-user-arp",copp_agroup="copp-user-arp-action", \
             cir="3100",cbs="3170",trap_queue="10",trap_priority="10")
         hdrMsg("STEP 5: Verify user defined SFLOW class-map/copp-trap and user defined copp-action-group/copp-group binding to system CoPP Policy")
         res = copp_obj.verify_policy_type_copp(dut=vars.D1,copp_fgroup="copp-user-sflow",copp_agroup="copp-user-sflow", \

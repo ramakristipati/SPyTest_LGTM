@@ -1645,7 +1645,7 @@ def test_ospf_host_emulation():
     st.log("Summary LSAs: " + str(sum_lsa))
 
     # Start OSPF protocol
-    ctrl = tg1.tg_emulation_ospf_control(mode='start', handle=ospf_ses['handle'])
+    tg1.tg_emulation_ospf_control(mode='start', handle=ospf_ses['handle'])
 
     # st.wait(20)
     # tg1.tg_emulation_ospfv2_info(handle=ospf_ses['handle'])

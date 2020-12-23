@@ -1,8 +1,7 @@
 
 import re
 
-from spytest import st,utils
-from spytest.tgen.tgen_utils import validate_tgen_traffic
+from spytest import st, tgapi
 
 from dpb_vars import data
 import apis.switching.portchannel as pc
@@ -23,7 +22,7 @@ import apis.common.asic_bcm as asic_api
 
 from utilities import parallel
 from utilities.utils import retry_api
-import utilities.common as utils_api
+import utilities.common as utils
 
 
 def dpb_base_config():
@@ -544,7 +543,7 @@ def verify_traffic(src_tg_obj=None,dest_tg_obj=None,src_port=None,dest_port=None
     retry_count = kwargs.pop('retry_count',2)
     for iteration in range(retry_count):
         st.log("\n>>>>   ITERATION : {} <<<<<\n".format(iteration+1))
-        aggregate_result = validate_tgen_traffic(traffic_details=traffic_data, mode='aggregate', comp_type=comp_type, delay_factor=delay)
+        aggregate_result = tgapi.validate_tgen_traffic(traffic_details=traffic_data, mode='aggregate', comp_type=comp_type, delay_factor=delay)
         if aggregate_result:
             st.log('Traffic verification passed ')
             ret_val = True
@@ -607,7 +606,6 @@ def verify_stp(portlist=None,dut=None):
     Sf = 0
     Sd = 0
     if portlist is None: portlist = data.d1d2_ports
-    if dut is None: dut = data.dut1
     for dut_port in portlist:
         state = stp_api.show_stp_vlan_iface(data.dut1,vlan=data.d1tg_vlan_id,iface=dut_port)[0]['port_state']
         if state == 'FORWARDING':
@@ -1202,7 +1200,7 @@ def verify_counter_cpu():
     value=data.copp_cir_arp
     cli_out = asic_api.bcmcmd_show_c(data.dut1,interface='cpu')
     queue = 'PERQ_PKT(' + queue + ').cpu0'
-    fil_out = utils_api.filter_and_select(cli_out, ["time"], {"key": queue})
+    fil_out = utils.filter_and_select(cli_out, ["time"], {"key": queue})
     if not fil_out:
         st.error('queue: {} not found in output: {}'.format(queue, cli_out))
         return False

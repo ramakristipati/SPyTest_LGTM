@@ -14,7 +14,6 @@ import apis.system.reboot as reboot
 from apis.system.gnmi import gnmi_get, gnmi_set
 import apis.system.interface as intfapi
 from apis.system.management_vrf import config as mvrfconfig
-from apis.system.rest import config_rest
 import apis.routing.ip as ip
 import apis.system.rest as rest_obj
 from utilities.common import poll_wait
@@ -1825,17 +1824,17 @@ def test_ft_snmp_rest_v2_v3_inform_trap_mgmtvrf():
     ]
     }
     """)
-    
+
     rest_udp_tag_url = "/restconf/data/ietf-snmp:snmp/target"
     rest_param_url = "/restconf/data/ietf-snmp:snmp/target-params"
     credentials = st.get_credentials(vars.D1)
     st.rest_init(vars.D1, credentials[0], credentials[1], credentials[2])
     # udp_status = st.rest_update(vars.D1, path=data.udp_url, data=udp_data)["status"]
-    udp_status = config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=udp_data)
+    udp_status = rest_obj.config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=udp_data)
     # trap_status = st.rest_update(vars.D1, path=data.tag_url, data=trap_data)["status"]
-    trap_status = config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=trap_data)
+    trap_status = rest_obj.config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=trap_data)
     # param_status = st.rest_update(vars.D1, path=data.param_url, data=param_data)["status"]
-    param_status = config_rest(vars.D1, rest_url=rest_param_url, http_method='rest-patch', json_data=param_data)
+    param_status = rest_obj.config_rest(vars.D1, rest_url=rest_param_url, http_method='rest-patch', json_data=param_data)
     if not udp_status:
         st.error("UDP PUT failed")
         result = 0
@@ -1892,9 +1891,9 @@ def test_ft_snmp_rest_v2_v3_inform_trap_mgmtvrf():
         st.error("param DELETE failed")
         result = 0
     # inform_status = st.rest_update(vars.D1, path=data.tag_url, data=inform_data)["status"]
-    inform_status = config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=inform_data)
+    inform_status = rest_obj.config_rest(vars.D1, rest_url=rest_udp_tag_url, http_method='rest-patch', json_data=inform_data)
     # v3_param_status = st.rest_update(vars.D1, path=data.param_url, data=v3_param_data)["status"]
-    v3_param_status = config_rest(vars.D1, rest_url=rest_param_url, http_method='rest-patch', json_data=v3_param_data)
+    v3_param_status = rest_obj.config_rest(vars.D1, rest_url=rest_param_url, http_method='rest-patch', json_data=v3_param_data)
     if not inform_status:
         st.error("TAG PUT failed")
         result = 0
@@ -2006,8 +2005,8 @@ def test_ft_snmp_gnmi_v2_v3_inform_trap_mgmtvrf():
     ]
     }
     """)
-    
-    
+
+
     gnmi_udp_set = gnmi_set(dut=vars.D1, xpath=gnmi_set_udp_tag_url, json_content=udp_data)
     gnmi_tag_set = gnmi_set(dut=vars.D1, xpath=gnmi_set_udp_tag_url, json_content=trap_data)
     gnmi_param_set = gnmi_set(dut=vars.D1, xpath=gnmi_set_param_url, json_content=param_data)
@@ -2100,13 +2099,13 @@ def test_ft_snmp_cli_counter():
     snmp_obj.get_snmp_operation(ipaddress=ipaddress, oid="1.3.6.1.2.1.2.1.0",
                                 community_name=data.ro_community, report=False)
     st.log("Performing SNMPv3 get operation with valid username and invalid privacy password to simulate Encoding errors.")
-    get_snmp_output = snmp_obj.get_snmp_operation(connection_obj=ssh_conn_obj, ipaddress=ipaddress,
-                                                  oid=ifAdminStatus_oid, security_lvl="authPriv",
-                                                  filter=data.filter_cli, version="3", usr_name=data.v3_user4,
-                                                  auth_type=data.auth_protocol[0],
-                                                  auth_pwd=data.auth_password,
-                                                  privacy_type=data.verify_priv_protocol[0],
-                                                  privacy_pwd="dummyprivacy", timeout=5)
+    snmp_obj.get_snmp_operation(connection_obj=ssh_conn_obj, ipaddress=ipaddress,
+                                oid=ifAdminStatus_oid, security_lvl="authPriv",
+                                filter=data.filter_cli, version="3", usr_name=data.v3_user4,
+                                auth_type=data.auth_protocol[0],
+                                auth_pwd=data.auth_password,
+                                privacy_type=data.verify_priv_protocol[0],
+                                privacy_pwd="dummyprivacy", timeout=5)
 
     output = snmp_obj.verify_snmp_counters(vars.D1, map={"set_request_pdus": 1, "illegal_operation": 1, "encoding_errors": 6, "altered_variables": 1})
 

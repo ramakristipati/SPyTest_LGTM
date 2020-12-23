@@ -1,16 +1,16 @@
+
+import json
 import pytest
 from spytest import st, SpyTestDict
 
 import apis.system.ssh as sshapi
-import json
 import apis.system.basic as bc_obj
-import apis.system.rest as rest_obj
-from utilities.utils import ensure_service_params
 from apis.routing.ip import ping_poll, dump_mgmt_connectivity_info
 from apis.security.user import config, verify
 import apis.system.connection as ssh
 from apis.security.rbac import  rest_rbac_call
-from apis.system.rest import client_auth as rest_client_auth
+from apis.system.rest import client_auth as rest_client_auth, config_rest
+from utilities.utils import ensure_service_params
 
 rbac = SpyTestDict()
 
@@ -186,7 +186,7 @@ def test_ft_radius_login_rest():
     data1 = json.loads("""
 	{
 		"openconfig-system-ext:auth-type": "pap"
-	}   
+	}
     """)
     data2 = json.loads("""
     {
@@ -194,7 +194,7 @@ def test_ft_radius_login_rest():
         "auth-port": 1812,
         "secret-key": "Lvl7india"
       }
-    }             
+    }
 		""")
     data3 = json.loads("""
 	{
@@ -202,7 +202,7 @@ def test_ft_radius_login_rest():
 		"radius",
 		"local"
 	  ]
-	}                     
+	}
     """)
     rest_url1 = "/restconf/data/openconfig-system:system/aaa/server-groups/server-group={}/servers/server={}/config/openconfig-system-ext:auth-type".format(rbac.feature, rbac.host_ip)
 
@@ -210,12 +210,12 @@ def test_ft_radius_login_rest():
     rest_url2 = "/restconf/data/openconfig-system:system/aaa/server-groups/server-group={}/servers/server={}/radius/config".format(rbac.feature, rbac.host_ip)
     rest_url3 = "/restconf/data/openconfig-system:system/aaa/authentication/config/authentication-method"
     st.log("Configuring Radius server configuration with REST")
-    if not rest_obj.config_rest(vars.D1, http_method = 'put', rest_url = rest_url1, json_data = data1):
+    if not config_rest(vars.D1, http_method = 'put', rest_url = rest_url1, json_data = data1):
         st.report_fail("rest_call_failed", "PUT")
-    if not rest_obj.config_rest(vars.D1, http_method = 'patch', rest_url = rest_url2, json_data = data2):
+    if not config_rest(vars.D1, http_method = 'patch', rest_url = rest_url2, json_data = data2):
         st.report_fail("rest_call_failed", "PATCH")
     st.log("Setting login authentication to radius and local")
-    if not rest_obj.config_rest(vars.D1, http_method = 'put', rest_url = rest_url3, json_data = data3):
+    if not config_rest(vars.D1, http_method = 'put', rest_url = rest_url3, json_data = data3):
         st.report_fail("rest_call_failed", "PUT")
     st.log("SSH to device using radius credentials with auth_type pap")
     if not ssh.connect_to_device(rbac.ip_address, rbac.host_username, rbac.host_password):

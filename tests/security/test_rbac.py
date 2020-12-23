@@ -2,17 +2,17 @@
 RBAC Feature FT tests cases.
 Author1 : Prudvi Mangadu (prudvi.mangadu@broadcom.com)
 """
+import os
 import pytest
 from spytest import st, SpyTestDict
 
 import apis.system.ssh as sshapi
 from apis.routing.ip import ping_poll, dump_mgmt_connectivity_info
 from apis.security.user import config, verify
-from apis.security.rbac import *
+from apis.security.rbac import gnmi_call, ssh_call, rest_rbac_call
 from apis.system.gnmi import client_auth as gnmi_client_auth
 from apis.system.rest import client_auth as rest_client_auth
 from apis.system.basic import change_permissions
-import os
 
 rbac = SpyTestDict()
 

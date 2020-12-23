@@ -33,7 +33,9 @@ def sanity_vsonic_func_hooks(request):
     vlan_obj.clear_vlan_configuration(st.get_dut_names())
     portchannel_obj.clear_portchannel_configuration(st.get_dut_names())
 
-
+def report_fail(msgid, *args):
+    st.report_fail(msgid, *args)
+    return False
 
 data = SpyTestDict()
 data.vlan_id = str(random_vlan_list()[0])
@@ -132,7 +134,7 @@ def test_base_line_L2_portchannel_tests():
             vlan_obj.add_vlan_member(dut, data.vlan_id, [topology[dut]["TGports"], data.portChannelName], True)
 
             assert vlan_obj.verify_vlan_config(dut, data.vlan_id, tagged=[topology[dut]["TGports"],data.portChannelName]), \
-                st.report_fail("vlan_tagged_member_fail", [topology[dut]["TGports"],data.portChannelName], data.vlan_id)
+                report_fail("vlan_tagged_member_fail", [topology[dut]["TGports"],data.portChannelName], data.vlan_id)
 
         st.log("Verifing the Port channel status - Initially")
         for dut in topology:
@@ -203,7 +205,7 @@ def test_base_line_L2_portchannel_tests():
             portchannel_list.append("PortChannel00{}".format(i))
         dut1_portchannel_list = len(portchannel_obj.get_portchannel_list(vars.D1))
         assert int(dut1_portchannel_list) == int(data.no_of_port_channel_create_and_delete+1), \
-            st.report_fail("portchannel_count_verification_fail", data.no_of_port_channel_create_and_delete+1,
+            report_fail("portchannel_count_verification_fail", data.no_of_port_channel_create_and_delete+1,
                            dut1_portchannel_list)
         dut2_portchannel_list = len(portchannel_obj.get_portchannel_list(vars.D2))
         assert int(dut2_portchannel_list ) == int(data.no_of_port_channel_create_and_delete+1), \
@@ -716,7 +718,7 @@ def test_base_line_l2_forwarding_tests():
         vlan_obj.create_vlan(vars.D1, data.vlan)
         vlan_obj.add_vlan_member(vars.D1, data.vlan, data.tg_con_interface, True)
         assert vlan_obj.verify_vlan_config(vars.D1, data.vlan, tagged=data.tg_con_interface), \
-            st.report_fail("vlan_tagged_member_fail", data.tg_con_interface, data.vlan)
+            report_fail("vlan_tagged_member_fail", data.tg_con_interface, data.vlan)
 
         if not skip_tg:
 

@@ -360,7 +360,7 @@ def test_udld_loops_normal_aggressive():
     final_result = True
     tc_result1 = 0
     tc_result2 = 0
-    udld_global_fail = 0
+    #udld_global_fail = 0
     udld_mode_fail = 0
     udld_interface_normal_loop_fail = 0
     udld_interface_no_normal_loop_fail = 0

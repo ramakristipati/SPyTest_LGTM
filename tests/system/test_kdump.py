@@ -123,11 +123,7 @@ def perform_test(vars):
 
     # Extract memory used for kdump
     st.log("5) Extract memory used for kdump")
-    memory = None
-    output = st.config(vars.D1, 'show kdump memory')
-    p = output.find(': ')
-    if p != -1:
-        memory = output[p+2:]
+    st.config(vars.D1, 'show kdump memory')
 
     # Verify that /proc/cmdline has the kdump memory parameter
     st.log("6) Verify that /proc/cmdline has the kdump memory parameter")
@@ -154,7 +150,7 @@ def perform_test(vars):
 
     # Change the number of maximum dump file stored
     st.log("10) Change the number of maximum dump file stored")
-    output = st.config(vars.D1, 'config kdump num_dumps 2')
+    st.config(vars.D1, 'config kdump num_dumps 2')
 
     # Verify the number of dump file stored
     st.log("11) Verify the number of dump file stored")
@@ -224,7 +220,7 @@ def perform_test(vars):
 
     # Install a new SONiC image
     st.log("22) Install a new SONiC image")
-    output = st.config(vars.D1, "sonic_installer install http://10.59.132.240:9009/projects/csg_sonic/sonic_builds/daily/3.0/broadcom/LAST_BUILD/sonic-broadcom.bin --yes")
+    st.config(vars.D1, "sonic_installer install http://10.59.132.240:9009/projects/csg_sonic/sonic_builds/daily/3.0/broadcom/LAST_BUILD/sonic-broadcom.bin --yes")
 
     # Verify that two images in grub.cfg have the parameter "crashkernel=X"
     st.log('23) Verify that two images in grub.cfg have the parameter "crashkernel=X"')
@@ -241,9 +237,9 @@ def perform_test(vars):
 
     # Remove this new SONiC image
     st.log("24) Remove this new SONiC image")
-    output = st.config(vars.D1, "sonic_installer set_next_boot %s" % current_image)
-    output = st.config(vars.D1, "sonic_installer cleanup --yes")
-    output = st.config(vars.D1, "sonic_installer list")
+    st.config(vars.D1, "sonic_installer set_next_boot %s" % current_image)
+    st.config(vars.D1, "sonic_installer cleanup --yes")
+    st.config(vars.D1, "sonic_installer list")
 
     return None
 

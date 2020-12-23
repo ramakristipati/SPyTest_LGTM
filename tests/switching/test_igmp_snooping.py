@@ -2,19 +2,32 @@ import pytest
 import random
 
 from spytest import st, tgapi, SpyTestDict
-from spytest.utils import random_vlan_list
-from utilities.common import poll_wait, make_list
-from utilities.parallel import exec_foreach, exec_all, exec_parallel, ensure_no_exception
-from utilities.utils import util_ip_addr_to_hexa_conv, util_int_to_hexa_conv, retry_api
 
-from apis.switching.vlan import create_vlan_and_add_members, clear_vlan_configuration, config_vlan_members, delete_vlan_member, add_vlan_member, config_vlan_range, config_vlan_range_members
-from apis.switching.portchannel import config_portchannel, clear_portchannel_configuration, add_del_portchannel_member, poll_for_portchannel_status
-from apis.system.interface import clear_interface_counters, show_interface_counters_all, interface_operation, poll_for_interface_status, show_interface_counters_detailed
+from apis.switching.vlan import create_vlan_and_add_members
+from apis.switching.vlan import clear_vlan_configuration
+from apis.switching.vlan import config_vlan_members
+from apis.switching.vlan import delete_vlan_member
+from apis.switching.vlan import add_vlan_member
+from apis.switching.vlan import config_vlan_range
+from apis.switching.vlan import config_vlan_range_members
+from apis.switching.portchannel import config_portchannel
+from apis.switching.portchannel import clear_portchannel_configuration
+from apis.switching.portchannel import add_del_portchannel_member
+from apis.switching.portchannel import poll_for_portchannel_status
+from apis.system.interface import clear_interface_counters
+from apis.system.interface import show_interface_counters_all
+from apis.system.interface import interface_operation
+from apis.system.interface import poll_for_interface_status
+from apis.system.interface import show_interface_counters_detailed
 import apis.switching.igmp_snooping as igmp
 from apis.routing.ip import config_ip_addr_interface
 from apis.routing.pim import config_intf_pim
 import apis.system.reboot as rebootapi
 import apis.system.gnmi as gnmiapi
+
+from utilities.common import poll_wait, make_list, random_vlan_list
+from utilities.parallel import exec_foreach, exec_all, exec_parallel, ensure_no_exception
+from utilities.utils import util_ip_addr_to_hexa_conv, util_int_to_hexa_conv, retry_api
 
 igmp_data = SpyTestDict()
 
@@ -1126,7 +1139,7 @@ def test_ft_igmp_snooping_leave():
 
     st.banner("FtOpSoSwIgFn007 - Verify IGMP Snooping Fast-leave functionality")
     tc2_report_flag = 0
-    igmp_data.lmqt_val_actual = int(2*(int(igmp_data.lmqt_val)/1000))+5
+    igmp_data.lmqt_val_actual = int(2*(int(int(igmp_data.lmqt_val)/1000)))+5
     st.log("For IGMPv2, set Last Member query interval to {} msec and enable fast-leave mode".format(igmp_data.lmqt_val))
     igmp.config(vars.D1, vlan=igmp_data.vlan_li[1], last_member_query_interval=igmp_data.lmqt_val  )
     igmp.config(vars.D1,"fast_leave", vlan=igmp_data.vlan_li[1]  )
@@ -1697,7 +1710,8 @@ def test_ft_igmp_snooping_gnmi():
     res_en = "" if result is False else result
     if not "op: UPDATE" in res_en:
         report_flag = 1
-    res_get = gnmiapi.gnmi_get(vars.D1, gnmi_url)
+    result = gnmiapi.gnmi_get(vars.D1, gnmi_url)
+    res_get = "" if result is False else result
     if "sonic-igmp-snooping:querier" not in res_get:
         report_flag = 1
     result = gnmiapi.gnmi_set(vars.D1, gnmi_url, json_data_disable)

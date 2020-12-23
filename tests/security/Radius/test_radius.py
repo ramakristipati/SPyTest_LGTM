@@ -1,8 +1,8 @@
-import pytest
 import os
-from spytest import st
-from spytest.utils import random_vlan_list
-from spytest.dicts import SpyTestDict
+import pytest
+
+from spytest import st, SpyTestDict
+
 import apis.security.radius as radius
 import apis.security.tacacs as security
 import apis.system.connection as ssh
@@ -10,25 +10,21 @@ import apis.system.basic as basic
 import apis.security.user as user
 import apis.routing.ip as ip
 import apis.switching.vlan as vlan_obj
-from utilities.utils import ensure_service_params
-from utilities.parallel import ensure_no_exception
-from apis.system.connection import connect_to_device
-import utilities.common as common_utils
 import apis.system.management_vrf as mvrf
-from apis.system.basic import get_ifconfig_inet
-from utilities.common import poll_wait
 import apis.system.interface as interface
-from utilities.parallel import exec_parallel, exec_all, exec_foreach
 from apis.security.rbac import ssh_call
-from apis.switching.vlan import clear_vlan_configuration
 import apis.routing.vrf as vrf
 from apis.system.ssh import enable_ssh_in_user_vrf
 from apis.system.gnmi import gnmi_set, gnmi_get
 from apis.system.ssh import get_ssh_server_vrf
 import apis.routing.ip as ip_obj
-import apis.system.basic as basic_obj
 from apis.system.rest import config_rest, get_rest
 import apis.switching.portchannel as pc_obj
+
+import utilities.common as common_utils
+from utilities.utils import ensure_service_params
+from utilities.parallel import exec_parallel, exec_all, exec_foreach
+from utilities.parallel import ensure_no_exception
 
 radius_data = SpyTestDict()
 
@@ -120,7 +116,7 @@ def radius_func_hooks(request):
             st.log("server is not configured with proper ip")
     elif st.get_func_name(request) == 'test_ft_source_intf_Ethernet':
         radius.config_server(vars.D2, no_form=True, ip_address=radius_data.host_ip, action="delete")
-        basic_obj.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
+        basic.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
         if not security.set_aaa_authentication_properties(vars.D2, 'login', radius_data.aaa_login_local_radius):
             st.report_fail("authentication_login_config_fail")
         ip.config_ip_addr_interface(vars.D2, vars.D2D1P4, radius_data.ip4_addr[0], 24, family=radius_data.ipv4)
@@ -139,14 +135,14 @@ def radius_func_hooks(request):
                                     family=radius_data.ipv4)
         ip.config_ip_addr_interface(vars.D1, radius_data.port_channel, radius_data.ip4_addr[1], 24,
                                     family=radius_data.ipv4)
-        basic_obj.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
+        basic.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
         if not radius.config_server(vars.D2, ip_address=radius_data.ip4_addr[1], key=radius_data.host_passkey,
                                     priority=radius_data.host_priority, source_intf=radius_data.source_interface[2],
                                     action="add"):
             st.log("server is not configured with proper ip")
     elif st.get_func_name(request) == 'test_ft_source_intf_loopback':
         radius.config_server(vars.D2, no_form=True, ip_address=radius_data.host_ip, action="delete")
-        basic_obj.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
+        basic.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
         ip.configure_loopback(vars.D2, loopback_name='Loopback1', config="yes")
         ip.config_ip_addr_interface(vars.D2, 'Loopback1', radius_data.ip4_addr[2], 32, family=radius_data.ipv4)
         ip.config_ip_addr_interface(vars.D2, vars.D2D1P4, radius_data.ip4_addr[0], 24, family=radius_data.ipv4)
@@ -159,7 +155,7 @@ def radius_func_hooks(request):
             st.log("server is not configured with proper ip")
     elif st.get_func_name(request) == 'test_ft_source_intf_vlan':
         radius.config_server(vars.D2, no_form=True, ip_address=radius_data.host_ip, action="delete")
-        basic_obj.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
+        basic.config_radius_server(vars.D1, config_files_path=radius_data.radius_files_path, action="config")
         vlan_obj.create_vlan(vars.D1, radius_data.vlan_1)
         vlan_obj.create_vlan(vars.D2, radius_data.vlan_1)
         vlan_obj.add_vlan_member(vars.D1, radius_data.vlan_1, [vars.D1D2P4], tagging_mode=True)
@@ -176,7 +172,7 @@ def radius_func_hooks(request):
     if st.get_func_name(request) == 'test_ft_radius_ssh_mgmt_vrf':
         mvrf.config(vars.D1, no_form=True)
         enable_ssh_in_user_vrf(vars.D1, config='del', vrf_name="mgmt")
-        if not poll_wait(get_ifconfig_inet, 50, vars.D1, 'eth0'):
+        if not st.poll_wait(basic.get_ifconfig_inet, 50, vars.D1, 'eth0'):
             st.log("IP Address not found on eth0 after prologue")
             st.report_fail("mgmt_vrf_eth0_bind_fail")
         radius_with_mgmt(action='delete')
@@ -333,7 +329,7 @@ def radius_variables():
     radius_data.radius_files_path = []
     for file in radius_data.config_files: radius_data.radius_files_path.append(
         os.path.join(os.path.dirname(__file__), file))
-    radius_data.vlan_1 = str(random_vlan_list()[0])
+    radius_data.vlan_1 = str(common_utils.random_vlan_list()[0])
     radius_data.vlan_int_1 = "Vlan{}".format(radius_data.vlan_1)
     radius_data.source_interface = ['Management0', vars.D2D1P4, 'PortChannel1', 'Loopback1', radius_data.vlan_int_1]
 
@@ -387,8 +383,8 @@ def radius_module_epilog():
     st.log("Copying {} file to {} file".format(radius_data.radius_nss_bkp, radius_data.radius_nss))
     basic.copy_file_to_local_path(vars.D2, radius_data.radius_nss_bkp, radius_data.radius_nss)
     user.config_user(vars.D2, radius_data.host_username, mode='del')
-    clear_vlan_configuration([vars.D2, vars.D1])
-    basic_obj.config_radius_server(vars.D1, action="unconfig")
+    vlan_obj.clear_vlan_configuration([vars.D2, vars.D1])
+    basic.config_radius_server(vars.D1, action="unconfig")
     radius.config_server(vars.D2, no_form=True, ip_address=[host.ip for host in radius_data.hosts], action="delete")
 
 
@@ -576,7 +572,7 @@ def radius_with_mgmt(action='add'):
 
 def mgmt_vrf_enable():
     mvrf.config(vars.D1)
-    if not poll_wait(get_ifconfig_inet, 90, vars.D1, 'eth0'):
+    if not st.poll_wait(basic.get_ifconfig_inet, 90, vars.D1, 'eth0'):
         st.log("IP Address not found on eth0 after prologue")
         st.report_fail("mgmt_vrf_eth0_bind_fail")
 
@@ -821,7 +817,7 @@ def test_ft_radius_ssh_login_ipv6_unnumbered():
     '''
     interface.clear_interface_counters(vars.D1)
     st.log("executing hwsku command to make sure that the device comes to normal mode to execute linux ssh commands")
-    basic_obj.get_hwsku(vars.D2)
+    basic.get_hwsku(vars.D2)
     st.exec_ssh_remote_dut(vars.D2, radius_data.dut1_ipv6_link_local, radius_data.host_username,
                            radius_data.host_password, command="")
     counters = interface.get_interface_counters(vars.D1, vars.D1D2P1, "rx_ok")
@@ -838,7 +834,7 @@ def test_ft_radius_ssh_login_ipv4_unnumbered():
     '''
     interface.clear_interface_counters(vars.D2)
     st.log("executing hwsku command to make sure that the device comes to normal mode to execute linux ssh commands")
-    basic_obj.get_hwsku(vars.D2)
+    basic.get_hwsku(vars.D2)
     st.exec_ssh_remote_dut(vars.D2, radius_data.loopback_dut1, radius_data.host_username,
                            radius_data.host_password, command="")
     counters = interface.get_interface_counters(vars.D1, vars.D1D2P1, "rx_ok")
@@ -854,7 +850,7 @@ def test_ft_radius_ssh_login_ipv6_server():
     '''
     interface.clear_interface_counters(vars.D1)
     st.log("executing hwsku command to make sure that the device comes to normal mode to execute linux ssh commands")
-    basic_obj.get_hwsku(vars.D2)
+    basic.get_hwsku(vars.D2)
     st.exec_ssh_remote_dut(vars.D2, radius_data.dut1_ipv6_address, radius_data.host_username, radius_data.host_password, command="")
     counters = interface.get_interface_counters(vars.D1, vars.D2D1P1, "rx_ok")
     if counters == 0:
@@ -947,14 +943,14 @@ def test_ft_ssh_radius_gnmi():
     st.log(gnmi_set_output)
     if not gnmi_set_output:
         st.report_fail("radius_data_empty", "gnmi")
-    if not "op: UPDATE" in gnmi_set_output:
+    if not "op: UPDATE" in str(gnmi_set_output):
         st.report_fail("radius_data_empty", "gnmi")
     st.log("Checking whether radius server configured with gNMI or not")
     gnmi_get_output = gnmi_get(vars.D2, xpath=radius_data.get_set_xpath)
     st.log(gnmi_get_output)
     if not gnmi_get_output:
         st.report_fail('radius_data_not_found')
-    if "sonic-system-radius:sonic-system-radius" not in gnmi_get_output:
+    if "sonic-system-radius:sonic-system-radius" not in str(gnmi_get_output):
         st.report_fail("radius_data_not_created", radius_data.host_ip, "REST")
     st.log("Configuring aaa authentication method to radius and local")
     configuring_login_method(radius_data.aaa_login_radius_local)
@@ -985,7 +981,7 @@ def test_ft_nas_ip_statistics_ipv6():
     st.log("device ip address is {}".format(device_ip_address))
     st.exec_ssh_remote_dut(vars.D1, device_ip_address, radius_data.nas_sever_username,
                            radius_data.nas_server_pass, command="")
-    basic_obj.get_hwsku(vars.D1)
+    basic.get_hwsku(vars.D1)
     output = radius.show_config(vars.D1)
     st.log("output is {}".format(output))
     access_requests = output["servers"][2]["access_requests"]
@@ -1024,7 +1020,7 @@ def test_ft_nas_ip_statistics_ipv4():
     st.log("device ip address is {}".format(device_ip_address))
     st.exec_ssh_remote_dut(vars.D1, device_ip_address, radius_data.nas_sever_username,
                            radius_data.nas_server_pass, command="")
-    basic_obj.get_hwsku(vars.D1)
+    basic.get_hwsku(vars.D1)
     output = radius.show_config(vars.D1)
     st.log("output is {}".format(output))
     access_requests = output["servers"][2]["access_requests"]
@@ -1045,7 +1041,7 @@ def test_ft_nas_ip_statistics_ipv4():
 
 def test_ft_source_intf_mgmt():
     st.log("SSH to device using radius credentials with auth_type pap")
-    if not poll_wait(connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
+    if not st.poll_wait(ssh.connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
                      radius_data.host_password):
         st.report_fail("ssh_login_failed", radius_data.global_auth_type)
     st.report_pass("ssh_login_with_radius_successful", radius_data.global_auth_type)
@@ -1053,7 +1049,7 @@ def test_ft_source_intf_mgmt():
 
 def test_ft_source_intf_Ethernet():
     st.log("SSH to device using radius credentials with auth_type pap")
-    if not poll_wait(connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
+    if not st.poll_wait(ssh.connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
                      radius_data.host_password):
         st.report_fail("ssh_login_failed", radius_data.global_auth_type)
     st.report_pass("ssh_login_with_radius_successful", radius_data.global_auth_type)
@@ -1061,7 +1057,7 @@ def test_ft_source_intf_Ethernet():
 
 def test_ft_source_intf_portchannel():
     st.log("SSH to device using radius credentials with auth_type pap")
-    if not poll_wait(connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
+    if not st.poll_wait(ssh.connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
                      radius_data.host_password):
         st.report_fail("ssh_login_failed", radius_data.global_auth_type)
     st.report_pass("ssh_login_with_radius_successful", radius_data.global_auth_type)
@@ -1069,7 +1065,7 @@ def test_ft_source_intf_portchannel():
 
 def test_ft_source_intf_loopback():
     st.log("SSH to device using radius credentials with auth_type pap")
-    if not poll_wait(connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
+    if not st.poll_wait(ssh.connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
                      radius_data.host_password):
         st.report_fail("ssh_login_failed", radius_data.global_auth_type)
     st.report_pass("ssh_login_with_radius_successful", radius_data.global_auth_type)
@@ -1077,7 +1073,7 @@ def test_ft_source_intf_loopback():
 
 def test_ft_source_intf_vlan():
     st.log("SSH to device using radius credentials with auth_type pap")
-    if not poll_wait(connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
+    if not st.poll_wait(ssh.connect_to_device, 10, radius_data.ip_address, radius_data.host_username,
                      radius_data.host_password):
         st.report_fail("ssh_login_failed", radius_data.global_auth_type)
     st.report_pass("ssh_login_with_radius_successful", radius_data.global_auth_type)
