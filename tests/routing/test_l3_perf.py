@@ -231,7 +231,7 @@ def measure_nd_learn_time(dut1, default_nd, max_nd):
     record_start_time = 0
     prev_poll_count = 0
     #initialize start time for error cases
-    start_time = datetime.datetime.now()
+    #start_time = datetime.datetime.now()
 
     while(curr_nd < max_nd):
         now = datetime.datetime.now()

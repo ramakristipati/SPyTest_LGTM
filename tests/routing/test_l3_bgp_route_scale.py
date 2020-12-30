@@ -1,16 +1,16 @@
 import pytest
-from spytest.dicts import SpyTestDict
-import apis.routing.ip as ipfeature
-from spytest import st
 from collections import OrderedDict
-from spytest.tgen.tg import tgen_obj_dict
-from spytest.tgen.tgen_utils import tg_bgp_config
+
+from spytest import st, tgapi, SpyTestDict
+
+import apis.routing.ip as ipfeature
 import apis.switching.mac as macapi
-from spytest.utils import filter_and_select
 import apis.system.port as papi
 import apis.system.interface as ifapi
 import apis.routing.bgp as bgpfeature
 import apis.routing.vrf as vrf_api
+
+from utilities.common import filter_and_select
 
 def clear_arp_entries(dut):
     """
@@ -138,11 +138,11 @@ def verify_ping(src_obj,port_handle,dev_handle,dst_ip,ping_count=5,exp_count=5):
     return True
 
 def get_handles():
-    vars = st.get_testbed_vars()
 
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
+    vars = st.get_testbed_vars()
+    tg = tgapi.get_chassis(vars)
+    tg1, tg2 = tg, tg
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P1)
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
     tg_ph_2 = tg2.get_port_handle(vars.T1D1P2)
     return (tg1, tg_ph_1, tg2, tg_ph_2)
 
@@ -759,7 +759,7 @@ def create_l3_route(route_count, vrf_flag):
 
 
     # Configuring the BGP router.
-    bgp_rtr1 = tg_bgp_config(tg = tg1,
+    bgp_rtr1 = tgapi.tg_bgp_config(tg = tg1,
         handle    = h1['handle'],
         conf_var  = conf_var,
         route_var = route_var,
@@ -796,7 +796,7 @@ def create_l3_route(route_count, vrf_flag):
 
     res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
     st.log("TR_CTRL: "+str(res))
-    tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var=ctrl_stop)
+    tgapi.tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var=ctrl_stop)
     ipfeature.delete_ip_interface(dut, member4, data.intf_ip_addr)
     ipfeature.delete_ip_interface(dut, member3, data.my_ip_addr)
     bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)
@@ -957,7 +957,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
 
 
     # Configuring the BGP router.
-    bgp_rtr1 = tg_bgp_config(tg = tg1,
+    bgp_rtr1 = tgapi.tg_bgp_config(tg = tg1,
         handle    = h1['handle'],
         conf_var  = conf_var,
         route_var = route_var,
@@ -1012,7 +1012,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
     papi.clear_interface_counters(dut)
     res=tg2.tg_traffic_control(action='run', handle=tr1['stream_id'])
     st.wait(20)
-    #bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+    #bgp_rtr2 = tgapi.tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
     retval = check_intf_traffic_counters()
     if retval is True:
         if vrf_flag is False:
@@ -1052,7 +1052,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
         else:
             st.log("IPV4 Scale Test Case 2.5 FAILED")
 
-    #bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+    #bgp_rtr2 = tgapi.tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
 
 
     if vrf_flag is False:
@@ -1062,7 +1062,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
                                                                     ping_count='6', exp_count='6')
         if res2:
             st.log("Route Scaling Test Case 1.9 PASSED PING TEST")
-        #bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+        #bgp_rtr2 = tgapi.tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
         st.wait(30)
         retval = check_intf_traffic_counters()
         if retval is True:
@@ -1078,7 +1078,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
                                                                     ping_count='6', exp_count='6')
         if res3:
             st.log("Route Scaling Test Case 1.10 PASSED PING TEST")
-        #bgp_rtr2 = tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
+        #bgp_rtr2 = tgapi.tg_bgp_config(tg = tg1,      handle    = bgp_rtr1['conf']['handle'],        ctrl_var  = ctrl_stop)
 
         st.wait(30)
         retval = check_intf_traffic_counters()
@@ -1161,7 +1161,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
     if long_run_flag is False:
         res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
         st.log("TR_CTRL: "+str(res))
-        tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
+        tgapi.tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
         tg2.tg_traffic_control(action='reset',port_handle=tg_ph_2)
         tg1.tg_interface_config(port_handle=tg_ph_1, handle=h1['handle'], mode='destroy')
         tg2.tg_interface_config(port_handle=tg_ph_2, handle=h2['handle'], mode='destroy')
@@ -1234,7 +1234,7 @@ def ipv4_tc1_1to1_10(vrf_flag, long_run_flag, warm_reboot_flag):
 
     res=tg2.tg_traffic_control(action='stop', handle=tr1['stream_id'])
     st.log("TR_CTRL: "+str(res))
-    tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
+    tgapi.tg_bgp_config(tg = tg1, handle = bgp_rtr1['conf']['handle'], ctrl_var = ctrl_stop)
     ipfeature.delete_ip_interface(dut, member4, data.intf_ip_addr)
     ipfeature.delete_ip_interface(dut, member3, data.my_ip_addr)
     bgpfeature.delete_bgp_neighbor(dut, data.as_num, data.neigh_ip_addr, data.remote_as_num)

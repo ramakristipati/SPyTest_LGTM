@@ -4,7 +4,6 @@ from spytest import st, tgapi, SpyTestDict
 
 import apis.routing.ip as ipfeature
 import apis.routing.arp as arpfeature
-from spytest.tgen.tg import tgen_obj_dict
 import apis.switching.vlan as vapi
 import apis.system.port as papi
 import apis.system.interface as ifapi
@@ -34,8 +33,6 @@ def get_handles():
     vars = st.get_testbed_vars()
     tg = tgapi.get_chassis(vars)
     tg1, tg2 = tg, tg
-    tg1 = tgen_obj_dict[vars['tgen_list'][0]]
-    tg2 = tgen_obj_dict[vars['tgen_list'][0]]
     tg_ph_1 = tg1.get_port_handle(vars.T1D1P1)
     tg_ph_2 = tg2.get_port_handle(vars.T1D1P2)
 

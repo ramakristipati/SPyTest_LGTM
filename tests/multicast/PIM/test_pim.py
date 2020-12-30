@@ -3564,7 +3564,6 @@ def pim_012_fixture(request,prologue_epilogue):
 def test_pim_func_012(pim_012_fixture):
     #tc_list = ['FtOpSoRoPimFunc017']
     err_list = []
-    #tc_result = True
     d3d4_int = data.d3d4_vlan_intf[0]
     d3d4_int_vrf = data.d3d4_vlan_intf_vrf[0]
     hdrMsg("FtOpSoRoPimFunc017 - Verify PIM Assert functionality")
@@ -3580,7 +3579,6 @@ def test_pim_func_012(pim_012_fixture):
         err = 'IGMP group entries not learnt'
         failMsg(err);
         err_list.append(err)
-        #tc_result=False
         st.report_fail('test_case_failure_message',err)
 
     stream_handle1 = [data.stream_handles['{}_{}_{}'.format(group, 'S1', vrf_list[0])] for group in [data.ssm_group_list[0]]]
@@ -3610,7 +3608,6 @@ def test_pim_func_012(pim_012_fixture):
         err = "PIM Assert failed on Default VRF"
         failMsg(err);
         err_list.append(err);
-        tc_result = False
         st.report_fail('test_case_failure_message', err)
 
     #result2 = pim_api.verify_pim_show(data.dut4, cmd_type='interface traffic', interface=d3d4_int_vrf,
@@ -3619,7 +3616,6 @@ def test_pim_func_012(pim_012_fixture):
         err = "PIM Assert failed on User VRF"
         failMsg(err);
         err_list.append(err);
-        #tc_result = False
         st.report_fail('test_case_failure_message', err)
 
     st.report_pass('test_case_passed')

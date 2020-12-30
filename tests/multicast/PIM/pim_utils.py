@@ -2,22 +2,24 @@
 import struct
 import socket
 
-from spytest import st,utils
+from spytest import st, tgapi
+
 import apis.switching.portchannel as pc
 import apis.system.port as port_api
 import apis.switching.vlan as vlan_api
 import apis.routing.ip as ip_api
 from apis.routing import arp
-from utilities import parallel
 import apis.routing.bgp as bgp_api
 import apis.routing.ip_bgp as ip_bgp
-from spytest.tgen.tgen_utils import validate_tgen_traffic
 import apis.routing.vrf as vrf_api
 import apis.routing.pim as pim_api
 import apis.routing.igmp as igmp_api
 import apis.system.basic as basic_api
 from pim_vars import *
 import apis.common.asic as asicapi
+
+from utilities import parallel
+from utilities import common as utils
 
 
 def pim_base_config():
@@ -811,7 +813,7 @@ def verify_mcast_traffic(src_tg_obj=None,dest_tg_obj=None,src_port=None,dest_por
         delay =data.delay_factor
     for iteration in range(2):
         st.log("\n>>>>   ITERATION : {} <<<<<\n".format(iteration+1))
-        aggregate_result = validate_tgen_traffic(traffic_details=traffic_data, mode=mode, comp_type=comp_type, delay_factor=delay,
+        aggregate_result = tgapi.validate_tgen_traffic(traffic_details=traffic_data, mode=mode, comp_type=comp_type, delay_factor=delay,
                                                  tolerance_factor=2)
         if aggregate_result:
             st.log('Traffic verification passed ')
