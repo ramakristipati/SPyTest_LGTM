@@ -5233,10 +5233,16 @@ def test_FtOpSoRoEvpn5549Ft32227(Ft32227_fixture):
 #    reset_tgen()
 #    create_stream("l2")
     start_traffic(stream_han_list=stream_dict["l2"])
-
-    if verify_traffic():
-        st.log("##### PASS: Traffic verification passed after adding back old vlans #####")
-    else:
+    result=False
+    for i in range(3):
+        if verify_traffic():
+            st.log("##### PASS: Traffic verification passed after adding back old vlans #####")
+            result=True
+        else:
+            st.log("##### Retrying traffic verification #####")
+        if result:
+            break
+    if not result:
         success=False
         st.error("########## FAIL: Traffic verification failed after adding back old vlans ##########")
     current_stream_dict["stream"] = stream_dict["l2"]
