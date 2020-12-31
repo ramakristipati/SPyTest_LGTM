@@ -2,10 +2,11 @@
 # Author: Sunil Rajendra (sunil.rajendra@broadcom.com)
 
 import pytest
-from spytest import st,utils,tgapi
+from spytest import st, tgapi
 import apis.routing.ip as ip
 import apis.system.interface as intf
 from ecmp_utils import *
+from utilities import common as utils
 
 def initialize_topology_vars():
     global vars, tg, d3_tg_ph1, d3_tg_ph2, d4_tg_ph1, d4_tg_ph2, d5_tg_ph1, d5_tg_ph2, tg_all, dut_list
@@ -13,7 +14,7 @@ def initialize_topology_vars():
     vars = st.get_testbed_vars()
     if st.get_ui_type() == 'click':
         st.report_unsupported("test_execution_skipped", "Skipping cli mode CLICK")
-    
+
     data.dut_list = st.get_dut_names()
     data.rtr_list = data.dut_list[0:]
     data.leaf_list = data.rtr_list[2:]
@@ -23,7 +24,7 @@ def initialize_topology_vars():
     data.dut4 = data.dut_list[3]
     data.dut5 = data.dut_list[4]
     dut_list = [data.dut1, data.dut2, data.dut3, data.dut4, data.dut5]
-    
+
     data.d1d3_ports = [vars.D1D3P1, vars.D1D3P2, vars.D1D3P3]
     data.d3d1_ports = [vars.D3D1P1, vars.D3D1P2, vars.D3D1P3]
     data.d1d4_ports = [vars.D1D4P1, vars.D1D4P2, vars.D1D4P3]
@@ -42,13 +43,13 @@ def initialize_topology_vars():
     data.d3t1_ports = [vars.D3T1P1, vars.D3T1P2]
     data.d4t1_ports = [vars.D4T1P1, vars.D4T1P2]
     data.d5t1_ports = [vars.D5T1P1, vars.D5T1P2]
-    
+
     tg = tgapi.get_chassis(vars)
     d3_tg_ph1, d3_tg_ph2 = tg.get_port_handle(vars.T1D3P1), tg.get_port_handle(vars.T1D3P2)
     d4_tg_ph1, d4_tg_ph2 = tg.get_port_handle(vars.T1D4P1), tg.get_port_handle(vars.T1D4P2)
     d5_tg_ph1, d5_tg_ph2 = tg.get_port_handle(vars.T1D5P1), tg.get_port_handle(vars.T1D5P2)
     tg_all = [d3_tg_ph1, d3_tg_ph2, d4_tg_ph1, d4_tg_ph2, d5_tg_ph1, d5_tg_ph2]
-    
+
 
 def create_tg_hosts():
     global tg_l1_h1, tg_l1_h2, tg_l2_h1, tg_l2_h2, tg_l3_h1, tg_l1_h1_6, tg_l1_h2_6, tg_l2_h1_6, tg_l2_h2_6, tg_l3_h1_6
@@ -74,7 +75,7 @@ def create_tg_streams():
 @pytest.fixture(scope='module', autouse=True)
 def prologue_epilogue(request):
     initialize_topology_vars()
-    [res, exceptions] = utils.exec_all(True, [[create_tg_hosts], [ecmp_base_config]], True)
+    [res, _] = utils.exec_all(True, [[create_tg_hosts], [ecmp_base_config]], True)
     create_tg_streams()
     if res[1] is False:
         more_debugs(duts=dut_list)
@@ -90,14 +91,14 @@ def test_ecmp_vxlan_func003():
     fail_msgs = ''
     tc_res={}
     for tc in tc_list: tc_res[tc] = True
-    
+
     spine1=data.dut1
     spine2=data.dut2
     leaf1=data.dut3
     leaf2=data.dut4
     leaf3=data.dut5
     vxlan_tolerance=30
-    
+
     st.banner("Step T1: Verify default show cli.")
     def f3_t1_1():
         res1=ip.verify_ip_loadshare(spine1, ip=ecmpv4, ipv6=ecmpv6, seed=data.seed_def)
@@ -134,19 +135,19 @@ def test_ecmp_vxlan_func003():
             st.log(fail_msg)
             return False
         return True
-    [res, exceptions] = utils.exec_all(True, [[f3_t1_1], [f3_t1_2], [f3_t1_3], [f3_t1_4], [f3_t1_5]])
+    [res, _] = utils.exec_all(True, [[f3_t1_1], [f3_t1_2], [f3_t1_3], [f3_t1_4], [f3_t1_5]])
     if False in set(res):
         fail_msg = "ERROR: Step T1 show cli for default values failed."
         fail_msgs += fail_msg
         st.log(fail_msg)
         tc_res[tc_list[0]]=False
         retvar = False
-    
+
     '''
     st.log("Step T1a: Fine tuning the config and verification.")
     f3_f2_1=lambda x: intf.interface_shutdown(spine1, [vars.D1D3P2, vars.D1D4P2, vars.D1D5P2])
     f3_f2_2=lambda x: intf.interface_shutdown(spine2, [vars.D2D3P2, vars.D2D4P2, vars.D2D5P2])
-    [res, exceptions] = utils.exec_all(True, [[f3_f2_1, 1], [f3_f2_2, 1]])
+    [res, _] = utils.exec_all(True, [[f3_f2_1, 1], [f3_f2_2, 1]])
     st.wait(waitvar)
     '''
     st.banner("Step T2: Start all IPv4 and IPv6 Streams.")
@@ -158,13 +159,13 @@ def test_ecmp_vxlan_func003():
     f3_f1_3 = lambda x: intf.clear_interface_counters(leaf1)
     f3_f1_4 = lambda x: intf.clear_interface_counters(leaf2)
     f3_f1_5 = lambda x: intf.clear_interface_counters(leaf3)
-    [res, exceptions] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
+    [res, _] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
     tg.tg_traffic_control(action='clear_stats', port_handle=tg_all)
     res=tg.tg_traffic_control(action='run', handle=tg_strs)
     st.wait(waitvar)
     res=tg.tg_traffic_control(action='stop', handle=tg_strs)
     st.wait(waitvar/2)
-    
+
     st.banner("Step T3: Verify ECMP.")
     leaf_tg_ports = [[leaf1, vars.D3T1P1], [leaf1, vars.D3T1P2], [leaf2, vars.D4T1P1], [leaf2, vars.D4T1P2]]
     l3_spine_ports = [[leaf3, vars.D5D1P1], [leaf3, vars.D5D1P2], [leaf3, vars.D5D2P1], [leaf3, vars.D5D2P2]]
@@ -181,7 +182,7 @@ def test_ecmp_vxlan_func003():
         retvar = False
         gen_tech_supp(filename='f3_t3_')
         more_debugs(duts=dut_list)
-    
+
     st.banner("Step T4: Remove dst-ip on leaf3, src-l4-port from other duts.")
     def f3_t4_1():
         ip.config_ip_loadshare_hash(spine1, key='ip', val=ecmpv4[3], config='no')
@@ -228,7 +229,7 @@ def test_ecmp_vxlan_func003():
             st.log(fail_msg)
             return False
         return True
-    [res, exceptions] = utils.exec_all(True, [[f3_t4_1], [f3_t4_2], [f3_t4_3], [f3_t4_4], [f3_t4_5]])
+    [res, _] = utils.exec_all(True, [[f3_t4_1], [f3_t4_2], [f3_t4_3], [f3_t4_4], [f3_t4_5]])
     if False in set(res):
         fail_msg = "ERROR: Step T4 show cli failed."
         fail_msgs += fail_msg
@@ -236,15 +237,15 @@ def test_ecmp_vxlan_func003():
         tc_res[tc_list[0]] = tc_res[tc_list[1]] = False
         retvar = False
     st.wait(waitvar,"Waiting for hardware programming to complete.")
-    
+
     st.banner("Step T5: Start the Streams - IPv4.")
-    [res, exceptions] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
+    [res, _] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
     tg.tg_traffic_control(action='clear_stats', port_handle=tg_all)
     res=tg.tg_traffic_control(action='run', handle=tg_v4s)
     st.wait(waitvar)
     res=tg.tg_traffic_control(action='stop', handle=tg_v4s)
     st.wait(waitvar/2)
-    
+
     st.banner("Step T6: Verify no ECMP at leaf1 and leaf2 - IPv4.")
     res1a=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=leaf_tg_ports, ratio = [[1], [1, 0, 0, 0]], clear_save=True)
     res1b=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=leaf_tg_ports, ratio = [[1], [0, 1, 0, 0]], saved_flag=True)
@@ -287,15 +288,15 @@ def test_ecmp_vxlan_func003():
         st.log(fail_msg)
         tc_res[tc_list[0]] = False
         retvar = False
-    
+
     st.banner("Step T7: Start the Streams - IPv6.")
-    [res, exceptions] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
+    [res, _] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
     tg.tg_traffic_control(action='clear_stats', port_handle=tg_all)
     res=tg.tg_traffic_control(action='run', handle=tg_v6s)
     st.wait(waitvar)
     res=tg.tg_traffic_control(action='stop', handle=tg_v6s)
     st.wait(waitvar/2)
-    
+
     st.banner("Step T8: Verify no ECMP at leaf1 and leaf2 - IPv6.")
     res1a=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=leaf_tg_ports, ratio = [[1], [1, 0, 0, 0]], clear_save=True)
     res1b=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=leaf_tg_ports, ratio = [[1], [0, 1, 0, 0]], saved_flag=True)
@@ -329,7 +330,7 @@ def test_ecmp_vxlan_func003():
     if retvar is False:
         gen_tech_supp(filename='f3_t8_')
         more_debugs(duts=dut_list)
-    
+
     st.banner("Step T10: Reconfigure the ECMP params.")
     def f3_t10_1():
         ip.config_ip_loadshare_hash(spine1, key='ip', val=ecmpv4[3])
@@ -376,7 +377,7 @@ def test_ecmp_vxlan_func003():
             st.log(fail_msg)
             return False
         return True
-    [res, exceptions] = utils.exec_all(True, [[f3_t10_1], [f3_t10_2], [f3_t10_3], [f3_t10_4], [f3_t10_5]])
+    [res, _] = utils.exec_all(True, [[f3_t10_1], [f3_t10_2], [f3_t10_3], [f3_t10_4], [f3_t10_5]])
     if False in set(res):
         fail_msg = "ERROR: Step T10 show cli failed."
         fail_msgs += fail_msg
@@ -384,15 +385,15 @@ def test_ecmp_vxlan_func003():
         tc_res[tc_list[0]] = tc_res[tc_list[1]] = tc_res[tc_list[2]] = False
         retvar = False
     st.wait(waitvar,"Waiting for hardware programming to complete.")
-    
+
     st.banner("Step T11: Start the Streams.")
-    [res, exceptions] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
+    [res, _] = utils.exec_all(True, [[f3_f1_1, 1], [f3_f1_2, 1], [f3_f1_3, 1], [f3_f1_4, 1], [f3_f1_5, 1]])
     tg.tg_traffic_control(action='clear_stats', port_handle=tg_all)
     res=tg.tg_traffic_control(action='run', handle=tg_strs)
     st.wait(waitvar)
     res=tg.tg_traffic_control(action='stop', handle=tg_strs)
     st.wait(waitvar/2)
-    
+
     st.banner("Step T12: Verify ECMP is restored.")
     res1=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=leaf_tg_ports, ratio = [[1], [0.25, 0.25, 0.25, 0.25]], clear_save=True, tolerance=vxlan_tolerance)
     res2=verify_intf_counters(rx=[[leaf3, vars.D5T1P1]], tx=l3_spine_ports, ratio = [[1], [0.25, 0.25, 0.25, 0.25]], saved_flag=True, tolerance=vxlan_tolerance)
@@ -406,12 +407,12 @@ def test_ecmp_vxlan_func003():
         retvar = False
         gen_tech_supp(filename='f3_t12_')
         more_debugs(duts=dut_list)
-    
+
     for tc in tc_list:
         if tc_res[tc]:
             st.report_tc_pass(tc, "tc_passed")
-    
+
     if retvar is False:
         st.report_fail("test_case_failure_message", fail_msgs)
-    
+
     st.report_pass("test_case_passed")

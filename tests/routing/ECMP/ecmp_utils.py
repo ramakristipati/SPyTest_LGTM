@@ -1,8 +1,6 @@
 from spytest import st
-from spytest.tgen.tg import *
-from spytest.tgen.tgen_utils import *
 
-import apis.common.asic_bcm as bcm
+import apis.common.asic as bcm
 import apis.routing.ip as ip
 import apis.routing.arp as arp
 import apis.routing.evpn as evpn
@@ -12,17 +10,18 @@ from apis.system import basic
 import apis.switching.portchannel as pc
 import apis.routing.bgp as bgp_api
 import apis.switching.vlan as vlan_api
-import apis.routing.bgp as bgp_api
 import apis.routing.ip_bgp as ip_bgp
 import apis.routing.vrf as vrf_api
-import utilities.utils as utils_obj
-from utilities import parallel
 
 from ecmp_vars import *
 
+import utilities.utils as utils_obj
+import utilities.common as utils
+from utilities import parallel
+
 def verify_intf_counters(**kwargs):
     global saved_output
-    
+
     rx=kwargs['rx']
     tx=kwargs.get('tx',[])
     ratio=kwargs.get('ratio',[[1.0]])
@@ -32,13 +31,13 @@ def verify_intf_counters(**kwargs):
     ratio = [ratio[0],[]] if len(ratio) == 1 else ratio    #when tx=[]
     saved_flag = kwargs.get('saved_flag',False)
     clear_save = kwargs.get('clear_save',False)
-    
+
     retvar = True
     pass_msgs = []
     fail_msgs = []
     st.log("verify_intf_counters: kwargs={}.".format(kwargs))
     st.log("rx={},tx={},ratio={},tolerance={},rx_var={},tx_var={},saved_flag={},clear_save={}.".format(rx,tx,ratio,tolerance,rx_var,tx_var,saved_flag,clear_save))
-    
+
     if clear_save:
         saved_output={}
     out=[]
@@ -52,7 +51,7 @@ def verify_intf_counters(**kwargs):
     if cnt_ref == 0.0:
         st.log("Error:verify_intf_counters: Reference count is 0.")
         return False
-    
+
     for pair,rat1,var in zip(rx[1:]+tx, ratio[0][1:]+ratio[1], [rx_var]*len(rx[1:])+[tx_var]*len(tx)):
         dut,port = pair
         out=[]
@@ -72,7 +71,7 @@ def verify_intf_counters(**kwargs):
             st.log("Traffic check FAILED: dut={}, port={}, var={}, count={}, ref_count={}, ratio={}, diff_percent={}.".format(dut, port, var, cnt, cnt_ref, rat1, diffpc))
             fail_msgs += ["Traffic check FAILED: dut={}, port={}, var={}, count={}, ref_count={}, ratio={}, diff_percent={}.".format(dut, port, var, cnt, cnt_ref, rat1, diffpc)]
             retvar = False
-    
+
     for msg in pass_msgs+fail_msgs:
         st.log(msg)
     return retvar
@@ -86,35 +85,21 @@ def more_debugs(**kwargs):
     def ecmp_debugs(dut):
         #intf.clear_interface_counters(dut1)
         ip.show_ip_loadshare(dut)
-        bcm_cmdlist = ["l3 ecmp egress show",
-        "g raw RTAG7_HASH_FIELD_BMAP_1",
-        "g raw RTAG7_HASH_FIELD_BMAP_2",
-        "g raw RTAG7_HASH_FIELD_BMAP_3",
-        "g raw RTAG7_IPV4_TCP_UDP_HASH_FIELD_BMAP_1",
-        "g raw RTAG7_IPV4_TCP_UDP_HASH_FIELD_BMAP_2",
-        "g raw RTAG7_IPV6_TCP_UDP_HASH_FIELD_BMAP_1",
-        "g raw RTAG7_IPV6_TCP_UDP_HASH_FIELD_BMAP_2",
-        "g raw RTAG7_HASH_SEED_A",
-        "g raw RTAG7_HASH_SEED_B",
-        "d chg RTAG7_PORT_BASED_HASH",
-        "g raw HASH_CONTROL",
-        "l3 egress show"]
-        for b_cmd in bcm_cmdlist:
-            bcm.bcmcmd_show(dut,b_cmd)
+        bcm.dump_ecmp_info(dut)
         ip.show_ip_route(dut)
         arp.show_arp(dut)
         arp.show_ndp(dut)
         evpn.show_ip_neigh(dut)
-        bcm.bcmcmd_l3_defip_show(dut)
-        bcm.bcmcmd_l3_l3table_show(dut)
-        bcm.bcmcmd_l3_ip6host_show(dut)
-        bcm.bcmcmd_l3_ip6route_show(dut)
-        bcm.read_l2(dut)
-        bcm.bcm_cmd_l3_intf_show(dut)
+        bcm.dump_l3_defip(dut)
+        bcm.dump_l3_l3table(dut)
+        bcm.dump_l3_ip6host(dut)
+        bcm.dump_l3_ip6route(dut)
+        bcm.dump_l2(dut)
+        bcm.dump_l3_intf(dut)
         intf.show_interfaces_counters(dut)
         mac.get_mac(dut)
         ip.show_ip_route(dut, family='ipv6')
-    [res, exceptions]=utils.exec_all(True, [[ecmp_debugs, dut] for dut in duts])
+    [res, _]=utils.exec_all(True, [[ecmp_debugs, dut] for dut in duts])
     st.banner("MORE DEBUGS END...")
     return False if None not in set(res) else True
 
@@ -153,7 +138,7 @@ def ecmp_base_config():
     if not result:
         st.error('ECMP routes are not proper in the leafs.')
         return False
-    
+
     ###################################################
     st.banner("BASE Config End ")
     ###################################################
@@ -180,7 +165,7 @@ def config_ip(config='yes'):
     else:
         action = 'disable'
     st.log("Enable IPv6 over portchannel interfaces between Leaf and Spine")
-    
+
     def spine1():
         dut = data.dut1
         po_list = [data.po_s1l1, data.po_s1l2, data.po_s1l3]
@@ -195,7 +180,7 @@ def config_ip(config='yes'):
             for po, mems in zip(po_list, po_members):
                 pc.delete_portchannel_member(dut, po, mems)
                 pc.delete_portchannel(dut, po)
-    
+
     def spine2():
         dut = data.dut2
         po_list = [data.po_s2l1, data.po_s2l2, data.po_s2l3]
@@ -210,7 +195,7 @@ def config_ip(config='yes'):
             for po, mems in zip(po_list, po_members):
                 pc.delete_portchannel_member(dut, po, mems)
                 pc.delete_portchannel(dut, po)
-    
+
     def leaf1():
         dut = data.dut3
         po_list = [data.po_s1l1, data.po_s2l1]
@@ -224,7 +209,7 @@ def config_ip(config='yes'):
             for po, mems in zip(po_list, po_members):
                 pc.delete_portchannel_member(dut, po, mems)
                 pc.delete_portchannel(dut, po)
-    
+
     def leaf2():
         dut = data.dut4
         po_list = [data.po_s1l2, data.po_s2l2]
@@ -238,7 +223,7 @@ def config_ip(config='yes'):
             for po, mems in zip(po_list, po_members):
                 pc.delete_portchannel_member(dut, po, mems)
                 pc.delete_portchannel(dut, po)
-    
+
     def leaf3():
         dut = data.dut5
         po_list = [data.po_s1l3, data.po_s2l3]
@@ -252,9 +237,9 @@ def config_ip(config='yes'):
             for po, mems in zip(po_list, po_members):
                 pc.delete_portchannel_member(dut, po, mems)
                 pc.delete_portchannel(dut, po)
-    
+
     # Enable IPv6 between Spine and Leaf portchannels
-    [res, exceptions] =  st.exec_all([[spine1],[spine2],[leaf1],[leaf2],[leaf3]])
+    st.exec_all([[spine1],[spine2],[leaf1],[leaf2],[leaf3]])
 
 def config_loopback(config='yes'):
     #import apis.routing.ip as ip
@@ -264,7 +249,7 @@ def config_loopback(config='yes'):
     else:
         api_name = ip.config_ip_addr_interface
         config_str = "Delete"
-    
+
     st.log("%s Loopback configs between Leaf and Spine"%(config_str))
     if config == 'yes' :
         parallel.exec_parallel(True, data.rtr_list, ip.configure_loopback, [{'loopback_name': data.loopback1}] * 5)
@@ -273,7 +258,7 @@ def config_loopback(config='yes'):
         parallel.exec_parallel(True, data.rtr_list, ip.configure_loopback, [{'loopback_name': data.loopback2}] * 5)
         utils.exec_all(True, [[ip.config_ip_addr_interface, dut, data.loopback2, ip1, data.mask32]
                               for dut, ip1 in zip(data.rtr_list, data.loopback2_ip_list)])
-    
+
     else:
         utils.exec_all(True, [[ip.config_ip_addr_interface, dut, data.loopback2, ip1, data.mask32,'ipv4','remove']
                               for dut, ip1 in zip(data.rtr_list, data.loopback2_ip_list)])
@@ -348,7 +333,7 @@ def config_bgp(config='yes'):
             bgp_api.config_bgp(dut=dut, local_as=dut_as, config='yes', config_type_list=["multipath-relax", "max_path_ebgp"], max_path_ebgp='10')
             evpn.config_bgp_evpn(dut=dut, config='yes', config_type_list=["advertise_all_vni"], local_as=dut_as)
 
-        [res, exceptions] = st.exec_all( [[spine1], [spine2], [leaf1], [leaf2], [leaf3]])
+        st.exec_all( [[spine1], [spine2], [leaf1], [leaf2], [leaf3]])
 
     else:
         ##########################################################################
@@ -396,7 +381,7 @@ def config_leafInterface(config='yes'):
                 evpn.map_vlan_vni(dut, vtep_name, vlan, vlan)
             bgp_api.config_bgp(dut, local_as=local_as, vrf_name=data.vrf1, config='yes', config_type_list=["redist"], redistribute='connected')
             bgp_api.config_bgp(dut, local_as=local_as, vrf_name=data.vrf1, config='yes', config_type_list=["redist"], redistribute='static')
-                               
+
             bgp_api.config_bgp(dut, local_as=local_as, vrf_name=data.vrf1, config='yes', config_type_list=["redist"], redistribute='connected', addr_family='ipv6')
             bgp_api.config_bgp(dut, local_as=local_as, vrf_name=data.vrf1, config='yes', config_type_list=["redist"], redistribute='static', addr_family='ipv6')
             bgp_api.config_bgp(dut, local_as=local_as, config='yes', config_type_list=["redist"], redistribute='connected')
@@ -469,7 +454,7 @@ def config_leafInterface(config='yes'):
             evpn.config_bgp_evpn(dut, vrf_name=data.vrf1, config='yes', config_type_list=["advertise_ipv6_vrf"],  local_as=local_as, advertise_ipv6='unicast')
             for vlan in data.leaf3_dict['tenant_vlan_list']:
                 evpn.map_vlan_vni(dut, vtep_name, vlan, vlan)
-    
+
     else:
         def leaf1():
             dut = data.dut3
@@ -585,7 +570,7 @@ def tenant_vni_config(config = 'yes'):
                 vrf_api.bind_vrf_interface(dut, vrf_name=data.vrf1, intf_name=vlan_int, config='no')
             vlan_api.delete_vlan_member(dut, data.leaf3_dict["tenant_vlan_list"][0], data.d5t1_ports[0], True)
             vlan_api.delete_vlan_member(dut, data.leaf3_dict["tenant_vlan_list"][1], data.d5t1_ports[1], True)
-    [res, exceptions] = st.exec_all([[leaf1], [leaf2],[leaf3]])
+    [res, _] = st.exec_all([[leaf1], [leaf2],[leaf3]])
     return res
 
 def static_routes_config(config = 'yes'):
@@ -593,21 +578,21 @@ def static_routes_config(config = 'yes'):
     st.log("Configure Static routes on leafs which creates ECMP.")
     ################################################
     if config == 'yes' :
-        
+
         def leaf1():
             dut = data.dut3
             ip.create_static_route(dut, data.leaf1_dict["tenant_v4_ip"][0], data.st_ip_1[1], vrf=data.vrf1)
             ip.create_static_route(dut, data.leaf1_dict["tenant_v4_ip"][1], data.st_ip_1[1], vrf=data.vrf1)
             ip.create_static_route(dut, data.leaf1_dict["tenant_v6_ip"][0], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
             ip.create_static_route(dut, data.leaf1_dict["tenant_v6_ip"][1], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
-        
+
         def leaf2():
             dut = data.dut4
             ip.create_static_route(dut, data.leaf2_dict["tenant_v4_ip"][0], data.st_ip_1[1], vrf=data.vrf1)
             ip.create_static_route(dut, data.leaf2_dict["tenant_v4_ip"][1], data.st_ip_1[1], vrf=data.vrf1)
             ip.create_static_route(dut, data.leaf2_dict["tenant_v6_ip"][0], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
             ip.create_static_route(dut, data.leaf2_dict["tenant_v6_ip"][1], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
-    
+
     else:
         def leaf1():
             dut = data.dut3
@@ -615,15 +600,15 @@ def static_routes_config(config = 'yes'):
             ip.delete_static_route(dut, data.leaf1_dict["tenant_v4_ip"][1], data.st_ip_1[1], vrf=data.vrf1)
             ip.delete_static_route(dut, data.leaf1_dict["tenant_v6_ip"][0], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
             ip.delete_static_route(dut, data.leaf1_dict["tenant_v6_ip"][1], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
-        
+
         def leaf2():
             dut = data.dut4
             ip.delete_static_route(dut, data.leaf2_dict["tenant_v4_ip"][0], data.st_ip_1[1], vrf=data.vrf1)
             ip.delete_static_route(dut, data.leaf2_dict["tenant_v4_ip"][1], data.st_ip_1[1], vrf=data.vrf1)
             ip.delete_static_route(dut, data.leaf2_dict["tenant_v6_ip"][0], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
             ip.delete_static_route(dut, data.leaf2_dict["tenant_v6_ip"][1], data.st_ip6_1[1], vrf=data.vrf1, family='ipv6')
-    
-    [res, exceptions] = st.exec_all([[leaf1], [leaf2]])
+
+    [res, _] = st.exec_all([[leaf1], [leaf2]])
     return res
 
 def verify_ecmp_routes():
@@ -640,7 +625,7 @@ def verify_ecmp_routes():
         res = list(set([res1, res2, res3, res4]))
         st.log("verify_config_base_leaf1: res1={}, res2={}, res3={}, res4={}.".format(res1, res2, res3, res4))
         return res[0] if len(res)==1 else False
-    
+
     def verify_ecmp_routes_leaf2():
         st.log("Within verify_ecmp_routes_leaf2...")
         dut = data.dut4
@@ -653,7 +638,7 @@ def verify_ecmp_routes():
         res = list(set([res1, res2, res3, res4]))
         st.log("verify_config_base_leaf2: res1={}, res2={}, res3={}, res4={}.".format(res1, res2, res3, res4))
         return res[0] if len(res)==1 else False
-    
+
     def verify_ecmp_routes_leaf3():
         st.log("Within verify_ecmp_routes_leaf2...")
         dut = data.dut5
@@ -663,8 +648,8 @@ def verify_ecmp_routes():
         res = list(set([res1, res2, res3]))
         st.log("verify_config_base_leaf3: res1={}, res2={}, res3={}.".format(res1, res2, res3))
         return res[0] if len(res)==1 else False
-    
-    [res, exceptions] = utils.exec_all(True, [[verify_ecmp_routes_leaf1], [verify_ecmp_routes_leaf2], [verify_ecmp_routes_leaf3]])
+
+    [res, _] = utils.exec_all(True, [[verify_ecmp_routes_leaf1], [verify_ecmp_routes_leaf2], [verify_ecmp_routes_leaf3]])
     return False if False in set(res) else True
 
 def verify_bgp():
@@ -704,7 +689,7 @@ def verify_bgp():
 
         result = utils_obj.retry_api(ip_bgp.check_bgp_session, dut, nbr_list=nbrs, state_list=['Established'] * cnt, delay = 4, retry_count = 20)
         return result
-    [res, exceptions] =  st.exec_all([[spine1],[spine2],[leaf1],[leaf2],[leaf3]])
+    [res, _] =  st.exec_all([[spine1],[spine2],[leaf1],[leaf2],[leaf3]])
 
     if False in set(res):
         st.error("one or more BGP sessions did not come up between spine and leaf")
@@ -742,7 +727,7 @@ def verify_vxlan():
         result = evpn.verify_vxlan_tunnel_status(dut, local_loop_ip, remote_loop_ip_lst, ['oper_up'] * cnt)
         return result
 
-    [res, exceptions] = st.exec_all( [[leaf1], [leaf2], [leaf3]])
+    [res, _] = st.exec_all( [[leaf1], [leaf2], [leaf3]])
 
     if False in set(res):
         st.error("Vxlan tunnel did not come up between lvtep and dut3")
